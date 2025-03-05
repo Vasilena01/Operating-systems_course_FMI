@@ -1,0 +1,16 @@
+ #!/bin/bash
+  2
+  3 arg_count=$#
+  4
+  5 if [[ $arg_count -ne 1 ]]; then
+  6     echo "Invalid argument count!"
+  7     exit 1
+  8 fi
+  9
+ 10 search_path="$1"
+ 11 if [[ ! -d $search_path ]]; then
+ 12     echo "Search path is not a valid directory"
+ 13     exit 2
+ 14 fi
+ 15
+ 16 find "$search_path" -type l ! -exec test -e {} \; -print

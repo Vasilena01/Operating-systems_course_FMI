@@ -1,0 +1,157 @@
+--- SHELL COMMANDS ---
+
+--- NAVIGATE THROUGH DIRECTORIES
+- / - root directory
+- ./ - current directory 
+- ../ - parent directory
+- ~ - return to my home
+- ~ <username> - returns to the home directory of the user with <username>
+- cd /<certain path>/<filename.sh> - opens the certain file, no matter in which dir am i
+- realpath <път> - превръща произволен път в абсолютен път
+- basename <път> - връща базовото име на файл(символите след последната наклонена черта)
+- dirname <път> - връща пътя на директорията, в която е файл (символите преди последната наклонена черта)
+
+--- USERS
+- newgrp <група> - смяна на активна група в рамките на текущата сесия
+- id - gives info about the curr user
+- whoami - prints the name of the curr user
+- who - prints all logedin users
+- passwd - command for changing password
+
+--- WORK WITH FILES/DIRS
+- pwd - prints the current directory
+- ls -a - lists all files starting with '.'(hidden files)
+- ls -l - shows more info about the files/dirs, shows all files attributes
+- touch <filename.extension> - creates a file
+- mkdir <directory_name> - creates a directory
+- rm <filename.extension> - removes a file (cant be reverted)
+- rm -r <directory_name> - removes recursivly all the files + directories in a certain dir VERY CAREFUL WITH IT
+- rmdir - removes an empty directory
+- cat <filename.ext> - used to show the info of a file in one page
+- less <filename.ext> - used to show the information of a large file page by page, using the arrows / faster than cat
+- cp <път-от-къде> <път-къде> - copies a file from to
+- cp -r <път-от-къде> <път-къде> - copies a directory from to
+- mv <път-от-къде> <път-къде> - moves a file from to
+- stat <filename> - shows the file attributes
+- stat -L - същото като stat но, дереферира символните връзки
+- stat -c / --format "symbol_to_filter" <filename> - shows the certain attribute (не дерефер. символните връзки)
+- chown - changes the user/group of a certain file
+- chmod <права> <файл> - changes the rights of a certain file
+- chmod u=rwx,g=rx,o= - конкретни права
+- chmod a=rw - същото като chmod u=rw,g=rw,o=rw 
+- chmod g+x - добавя право на изпълнение за групата-собственик
+- chmod u-w - премахва право на запис за потребителя-собственик
+- chmod 755 - конкретни права в осмичен вид(3 групи - 7(011) - user, 5(101) - group, 5(101) - other, (rwe))
+- chmod -R - работи рекурсивно за дадената директория и нейните поддиректории
+- umask - sees the current mask (pod default = 022)
+- umask <маска> можем да зададем множество от права, 
+	които се премахват от тези по подразбиране при създаване на нов обект
+- ln <текущ път> <нов път> - създава твърда връзка към <текущия път>
+- ln-s <текущ път> <нов път> - създава символна връзка между текущия и новия път
+- df <път> - отпечатва статистика за заето и свободно място на файловата система, 
+	в която е подаденият път (или на всички файлови системи, ако не е подаден път)
+- du <път> - рекурсивно изписва заетото място на подедената директория и нейните поддиректории
+- realpath <път> - превръща произволен път в абсолютен път (дереферира всякакви символни връзки по пътя)
+- basename <път> - връща базовото име на файл (работивърху пътя като низ, не се интересува от символни връзки)
+- dirname <път> - връща пътя на директорията, в която е файл 
+	(работивърху пътя като низ, не се интересува от символни връзки)
+- readlink <път> - дереферира конкретна подадена връзка
+- tar - archive utility
+- <command> | xargs <command> - passes the output from the first command as actual arguments to the second command
+- xargs -I - we use it only if the input should be inserted in multiple places in the command
+
+--- HELP CENTER
+- <certain command> --help - opens the basic help center of the command
+- man <certain command> - shows the details of a certain command and explains how it works
+- info <certain command> - shows detailed information about a certain command
+- apropos <string> - searches for the <string> in all man's pages
+- whatis <низ>- връща всички секции, в които се среща дадена man страница, и кратки описания на съответните теми
+
+--- INFO ABOUT PROCESSES
+- top - shows the running programs at the moment + how much resources are taken and the cpu is using
+
+--- SEARCH COMMANDS
+- grep "word" - returns only the lines in a data sequence, which contains the given word 
+(WORKS ONLY for data sequence which is presented line by line)
+
+--- DATE & TIME
+- date - shows the current date/time
+- date +<форматен низ> - shows the current date/time with this format
+	- +'%Y-%m-%d %H:%M:%S' (2023-02-26 18:53:44)
+	- +'%H:%M' (18:54)
+	- +'%H:%M:%S.%N' (18:54:44.675)
+- date -d <format> - trans
+- date +'%s' - shows the unix timestamp (count of seconds passed for today)
+
+--- VARIABLES
+- $ - says that some symbol is a variable/get the variable - says to the shell that i want to use this variable
+(example: a=5; echo $a => 5)
+
+--- EXECUTE COMMANDS
+- echo <something> - prints <something> on the next line
+- <script_name.sh> - it will execute only if its in a directory listed in $PATH
+- ./<filename.sh> - executes the shell script
+
+--- OTHER
+- command|command|command... - gets the output from the left command and pass it as input to the right command
+- command & - gives the oportunity the executed processes to work at the same time with the shell
+(not the shell to sleep while waiting the first to finish and than to continue working)
+- kill <process_id> - stoping the running process
+- command ; command - first the first process is executed and than the second
+- * - разгръща самия низ (example: echo demo* - it will print all directories which name starts with demo...)
+- \<symbol> - stops the execution of a certain symbol 
+(example: echo demo\* - it will print just demo*)
+- '' - подтискат всякаква интерпретация
+- "" - подтискат някои интерпретации
+- - apropos <kl_duma>- kazva v koq stranica se namira neshto za <kl_duma>
+- <command $(<another_command>)> - executes the <other_command> inside the current one
+- <letter>* - filename starts with this letter
+- wc <file> - print newlines, words count for a certain file
+- find -user - file is owned by user <uname (ID)> 
+- id - print the user/group id's
+- du - (disk usage) - stands for how many space does a certain object takes in the filesystem
+
+Common Options with du
+Option	Description
+-a (disk usage for all - files & dirs) - without the -a by default it will show the disk usage for only dirs
+-h	Displays sizes in a human-readable format (e.g., 1K, 234M, 2G).
+-b	Displays sizes in bytes.
+-k	Displays sizes in kilobytes.
+-m	Displays sizes in megabytes.
+-s	Summarizes the total size of a directory (does not list individual files).
+
+DESCRIPTORS - a low-level intiger used from the os to access files/resources:
+Number	Name	Description
+0	stdin	Standard input (e.g., keyboard input or input from a pipe).
+1	stdout	Standard output (e.g., output displayed on the terminal).
+2	stderr	Standard error (e.g., error messages displayed on the terminal).
+3+	Custom	Used for additional files or resources.
+
+REDIRECTS
+>: Redirect stdout to a file (overwrite).
+>>: Redirect stdout to a file (append).
+2>: Redirect stderr to a file.
+&>: Redirect both stdout and stderr to a file.
+2>: Redirect stderr to a file(overwrite)
+2>&1: Redirect stderr to the same location as stdout.
+
+COMPARISON OPERATORS:
+-eq: Equal to.
+-gt: Greater than.
+-lt: Less than.
+-ge: Greater than or equal to.
+-le: Less than or equal to.
+-ne: Not equal to.
+
+FIND:
+- -size - checks the size of the file/dir
+- -delete - deletes the found object
+- -user (userId/name) - get objects with the certain user creator
+
+SCRIPTS:
+# - stores the total count of arguments passed after the script name, after its execution
+
+
+zapiski:
+
+
