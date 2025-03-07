@@ -59,6 +59,24 @@
 - tar - archive utility
 - <command> | xargs <command> - passes the output from the first command as actual arguments to the second command
 - xargs -I - we use it only if the input should be inserted in multiple places in the command
+- links +/-/[number] - returns these files with count of n links
+- file [object] - returns the type of the object
+
+--- WORK WITH FILE CONTENT
+- grep [options] pattern file - searches for a specific pattern in a file (line by line)
+Option	Description for grep
+-i	Ignore case (case-insensitive search).
+-v	Invert match (print lines that do not match the pattern).
+-c	Count the number of matching lines.
+-n	Print line numbers along with matching lines.
+-r	Recursively search directories.
+-l	Print only the names of files containing matches.
+-w	Match whole words only.
+-q	Quiet mode (suppress output; useful for checking exit status).
+- awk <pattern> - pattern scanning, processes and manipulates text based on patterns and fields. 
+	(used to extract information and manipulate it)
+- awk -F <pattern> - separate the line by fields and search for the pattern (fields are accessed via $1, $2...
+	$0 - means a whole line)
 
 --- HELP CENTER
 - <certain command> --help - opens the basic help center of the command
@@ -144,14 +162,80 @@ COMPARISON OPERATORS:
 -ne: Not equal to.
 
 FIND:
-- -size - checks the size of the file/dir
-- -delete - deletes the found object
-- -user (userId/name) - get objects with the certain user creator
+- find [options] [path] [expression]
+- [options] 2 na broj for how to treat symbol links 
+		- -L - follow symbol links
+		- p - dont follow symbol links
+[expression] - 3 categories: 
+		- where (GLOBAL): GLOBAL options for the expression: -mindepth/-maxdepth
+		- what (TESTS): what TESTS - if the found files/objects pass
+			-type [flag]
+			-name [pattern] - finds the objects with name which mach the pattern
+			-path [pattern] - finds if the whole path mathces the pattern
+			Globbing
+			* - matches all symbols which can be found (with no restricted length) / 
+				cat dir* - it will print all file's contents which start with dir...
+			? - like the *, but is just for one symbol
+			-perm mode - gets all objects with these permissions 
+			- perm /mode - pone edin ot zadadenite bitove trqbva da suvpada s pravata na object
+			- perm -mode - vsichki bitove trqbva da sa takiva
+			-user - the user whose the owner
+			-group - the group whose the owner
+			- atime +/-/[number] - all files which are last opened before [number] days / +[number] - number days or more
+			- ctime +/-/[number] - 
+			- mtime +/-/[number] - 
+			- size +/-/[size]
+				-c - bytes count in a file
+				-b - symbols count in a file
+			- -delete - deletes the found object
+			OPERATORS
+			-not [other_flag] - the opposite of the other_flag
+			- [left condition] -o [right condition] - left or right condition da e izpulneno 
+			- '([operation])' - skobite imat po-visok prioritet 
+		-what to do (ACTIONS):
+			-exec [command_to_execute] '{}' ';' or {\} \;
+			-ok - ekvivalenta na -exec, no pita dali se sigurni/iskame da izpulnim komandata
+			-printf [format_in_which_to_print_the_data] - za vseki ot failovete, kojto e podaden se printira v tozi format
 
 SCRIPTS:
 # - stores the total count of arguments passed after the script name, after its execution
 
-
 zapiski:
-
-
+- find [options] [path] [expression]
+- [options] 2 na broj for how to treat symbol links 
+		- -L - follow symbol links
+		- p - dont follow symbol links
+[expression] - 3 categories: 
+		- where (GLOBAL): GLOBAL options for the expression: -mindepth/-maxdepth
+		- what (TESTS): what TESTS - if the found files/objects pass
+			-type [flag]
+			-name [pattern] - finds the objects with name which mach the pattern
+			-path [pattern] - finds if the whole path mathces the pattern
+			Globbing
+			* - matches all symbols which can be found (with no restricted length) / 
+				cat dir* - it will print all file's contents which start with dir...
+			? - like the *, but is just for one symbol
+			-perm mode - gets all objects with these permissions 
+			- perm /mode - pone edin ot zadadenite bitove trqbva da suvpada s pravata na object
+			- perm -mode - vsichki bitove trqbva da sa takiva
+			-user - the user whose the owner
+			-group - the group whose the owner
+			- atime(access time) +/-/[number] - all files which are last opened before [number] days / +[number] - number days or more
+			- ctime(change time) +/-/[number] - the last time when i last changed the file (delete/move)
+			- mtime(modify time) +/-/[number] - the last time when i last modified the file's content
+			- size +/-/[size]
+				-c - bytes count in a file
+				-b - symbols count in a file
+			OPERATORS
+			-not [other_flag] - the opposite of the other_flag
+			- [left condition] -o [right condition] - left or right condition da e izpulneno 
+			- '([operation])' - skobite imat po-visok prioritet 
+		-what to do (ACTIONS):
+			-print (by default)
+			-exec [command_to_execute] '{}' ';' or {\} \;
+			-ok - ekvivalenta na -exec, no pita dali se sigurni/iskame da izpulnim komandata
+			-printf [format_in_which_to_print_the_data] - za vseki ot failovete, kojto e podaden se printira v tozi format
+- upr 2:
+- nqkoi komandi mogat da razgranichavat simlinkove, i -L ukazva che shte posledva symlinka
+- file [object] - returns the type of the object
+- links +/-/[number] - returns n links	

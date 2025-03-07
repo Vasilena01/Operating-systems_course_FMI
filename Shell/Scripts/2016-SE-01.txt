@@ -14,3 +14,4 @@
  14 fi
  15
  16 find "$search_path" -type l ! -exec test -e {} \; -print
+ 17 #Second solution: find "$search_path" -type l -xtype l

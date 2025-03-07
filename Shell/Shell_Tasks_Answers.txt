@@ -13,5 +13,5 @@ but can be added: find ~ -type f -exec du -a {} \; | sort -n -r | head -n 5 | cu
 		- find ~ -maxdepth 1 -type f -user $(whoami) | xargs -I{} chmod 664/775 {} >/dev/null (the given solution)
 2023-CE-01 -  find / ~ -type f -user $(whoami) -name "*.blend[0-9]" 2>/dev/null
 		- find / ~ -type f -user $(whoami) -regex '.*\.blend[0-9]$' 2>/dev/null
-
-SCRIPTS in scripts folder
+2016-SE-01 - cat philip-j-fry.txt | grep -e (we can miss the -e) '^[^a-w]*[2468][^a-w]*$' | wc -l OR
+		grep -v '[a-w]' philip-j-fry.txt  | grep '[02468]' | wc -l
