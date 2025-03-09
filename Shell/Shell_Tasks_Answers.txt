@@ -1,6 +1,26 @@
-COMMANDS:
+PIPES FROM GITHUB EXERCISES:
+- 03-a-0200 - cat /etc/passwd | sort -k 3 -t ':'
+- 03-a-0201 - cat /etc/passwd | sort -n -k 3 -t ':'
+- 03-a-0210 - cat /etc/passwd | cut -f 1,5 -d ':' or awk -F ':' '{print $1 ":" $5}' /etc/passwd
+- 03-a-0211 - cat /etc/passwd | cut -c 2-6
+- 03-a-0212 - cat /etc/passwd | cut -f 1,6 -d ':'| tr ':' ' '
+- 03-a-0213 - cat /etc/passwd | cut -f 2 -d '/'
+- 03-a-1500 - wc -c(bytes) or -m(chars) or -l(newlines) /etc/passwd | cut -f 1 -d ' '
+- 03-a-2000 - head /etc/passwd -n 12
+		- head /etc/passwd -c 26
+		- head /etc/passwd -n -4
+		- tail /etc/passwd -n 17
+		- head /etc/passwd -n 151 | tail -n 1
+		- head /etc/passwd -n 13 | tail -n 1 | tail -c 5
+- 03-a-3000 - tail -n -6 initCommand | sort -n -k 2 or tail -n +2 initCommand | sort -n -k 2
+- 03-a-3100 - cat /etc/passwd | cut -f 1 -d ':' > users
+- 03-a-3500 - cat /etc/passwd | cut -f 1 -d ':' | tr a-z A_Z  > users
+- 03-a-3501 -  cat /etc/passwd | cut -f 7 -d ':' | grep -v '/bin/bash'| wc -l
+- 03-a-3502 - cat /etc/passwd | cut -f 5 -d ':' | cut -f 2 -d ' ' | cut -f 1 -d ',' | grep -E '.{7,}$'
+
+COMMANDS FROM THE PROBLEM SET:
 2017-IN-01 - find -user $(id -u) 2>/dev/null | wc -l
-2017-IN-02 - 1) find ./ -type f -size 0 -delete; 2) find ~ -type f -exec du -a {} \; | sort -n -r | head -n 5,
+!2017-IN-02 - 1) find ./ -type f -size 0 -delete; 2) find ~ -type f -exec du -a {} \; | sort -n -r | head -n 5,
 but can be added: find ~ -type f -exec du -a {} \; | sort -n -r | head -n 5 | cut -f2 | xargs rm for output styling
 2018-SE-01 - find ~ -type d | xargs -I{} chmod 755 {}
 			- find ~ -type d | xargs chmod 755 (alternative solution)
@@ -14,4 +34,11 @@ but can be added: find ~ -type f -exec du -a {} \; | sort -n -r | head -n 5 | cu
 2023-CE-01 -  find / ~ -type f -user $(whoami) -name "*.blend[0-9]" 2>/dev/null
 		- find / ~ -type f -user $(whoami) -regex '.*\.blend[0-9]$' 2>/dev/null
 2016-SE-01 - cat philip-j-fry.txt | grep -e (we can miss the -e) '^[^a-w]*[2468][^a-w]*$' | wc -l OR
-		grep -v '[a-w]' philip-j-fry.txt  | grep '[02468]' | wc -l
+		grep -v '[a-w]' philip-j-fry.txt  | grep '[02468]' | wc -l OR
+		grep -v '[a-w]' philip-j-fry.txt | grep -c '[02468]'
+2017-IN-03 - 
+2017-SE-01 - find . -type f | xargs stat -c "%h %n" | sort -k1 -n -r | head -n 5 | awk '{print $2}' or
+		find . -type f | xargs -I{} stat -c "%h %n" {} | sort -k1nr | head -n 5 | awk '{print $2}'
+2018-SE-02 -  find /home/pesho -type f -iname '* *' -printf "%p:%T@:%i" | sort -k2 -n -r -t ' ' | head -n 1 | cut -d ':' -f3
+2018-SE-03 - cat /etc/passwd | awk -F ':' '{split($1, a, "s"); split($5, b, ","); print a[2], b[1], $6}' | sort -n | awk '{print $2, $3 ": " $4}'
+	-  /etc/passwd | awk -F ':' '{print $5 " " $6}' | tr ',' ' ' | awk '{print $1 " " $2 ":" $3}' (its the solution, but it doen't work as expected)
