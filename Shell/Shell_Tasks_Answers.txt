@@ -15,9 +15,30 @@ PIPES FROM GITHUB EXERCISES:
 - 03-a-3000 - tail -n -6 initCommand | sort -n -k 2 or tail -n +2 initCommand | sort -n -k 2
 - 03-a-3100 - cat /etc/passwd | cut -f 1 -d ':' > users
 - 03-a-3500 - cat /etc/passwd | cut -f 1 -d ':' | tr a-z A_Z  > users
-- 03-a-3501 -  cat /etc/passwd | cut -f 7 -d ':' | grep -v '/bin/bash'| wc -l
-- 03-a-3502 - cat /etc/passwd | cut -f 5 -d ':' | cut -f 2 -d ' ' | cut -f 1 -d ',' | grep -E '.{7,}$'
-
+- 03-a-5001 -  cat /etc/passwd | cut -f 7 -d ':' | grep -v '/bin/bash'| wc -l
+- 03-a-5002 - cat /etc/passwd | cut -f 5 -d ':' | cut -f 2 -d ' ' | cut -f 1 -d ',' | grep -E '.{7,}$'
+- 03-a-5003? - cat /etc/passwd | cut -f 5 -d ':' | cut -f 2 -d ' ' | cut -f 1 -d ',' | grep -v -E '.{8,}' | grep -E '[^a-zA-Z]'
+- 03-a-5004? - cat /etc/passwd | cut -d ':' -f5 | cut -d ',' -f1 | cut -d ' ' -f2 | grep -v -E '.{8,}$' | grep -E '[^a-zA-Z]' | sort | uniq | xargs -I{} grep -w {} /etc/passwd 
+- 03-a-6000 - awk 'END{print NR}' emp.data or awk 'BEGIN{i=0} {i++} END{print i}' emp.data
+		- awk 'NR==3 {print}' emp.data
+		- awk 'END{print $NF}' emp.data
+		- awk 'NF > 4 {print}' emp.data
+		- awk '$NF > 4 {print}' emp.data
+		- awk '{print NF}' emp.data
+		- awk 'BEGIN {i = 0} /Beth/ {i += 1} END {print i}' emp.data
+		- awk 'BEGIN {max = 0; line = " "} {if ($3 > max) {max = $3; line = $0}} END{print max " " line}' emp.data
+		-  awk 'NF > 2 {print}' emp.data
+		- awk 'length($0) > 17' emp.data
+		- awk '{print NF " " $0}' emp.data
+		- awk '{print $2 "\t" $1}' data/emp.data
+		-  awk '{temp = $1; $1 = $2; $2 = temp} {print $1 " " $2}' emp.data
+		- awk '{{ $1 = NR; } print}' emp.data
+		- awk '{$2 = "\t"; print $0}' emp.data
+		- awk 'BEGIN{sum = 0} {sum = $2 + $3} {print sum}' emp.data
+		- awk 'BEGIN {sum = 0} {sum += $2 + $3} END {print sum}' emp.data
+- 03-b-0300 - awk -F ':' 'BEGIN {groupId = 0} {if($1 == "s0600290") {groupId = $4}} END{print groupId}' /etc/passwd
+		- grep $(id -u) /etc/passwd | cut -d ':' -f4
+- 03-b-3400 - 
 COMMANDS FROM THE PROBLEM SET:
 2017-IN-01 - find -user $(id -u) 2>/dev/null | wc -l
 !2017-IN-02 - 1) find ./ -type f -size 0 -delete; 2) find ~ -type f -exec du -a {} \; | sort -n -r | head -n 5,

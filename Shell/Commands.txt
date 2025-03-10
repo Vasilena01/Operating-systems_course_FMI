@@ -61,6 +61,8 @@
 - xargs -I - we use it only if the input should be inserted in multiple places in the command
 - links +/-/[number] - returns these files with count of n links
 - file [object] - returns the type of the object
+- xxd [file] - prints all data in the file in binary (x16) format
+- strings [file] - prints just the strings from the file
 
 --- WORK WITH FILE CONTENT
 - grep [options] pattern file - searches for a specific pattern in a file (line by line)
@@ -77,10 +79,20 @@ Option	Description for grep
 	(used to extract information and manipulate it)
 - awk -F <pattern> - separate the line by fields and search for the pattern (fields are accessed via $1, $2...
 	$0 - means a whole line)
+	- $NR - number of lines
+	- NF - number of columns
+	- $NF - last column
 - sort [options] - sorts the output of a command
 	- k[index] (k1) - sorts by i-th column
 	- n - sort the lines
 	- r - sort in reverse mode
+- $ head <файл>- изписва първите 10 реда от файл в конзолата 
+- $ head -n <N> <файл>- изписва първите <N> реда от файла 
+- $ head -n -<N> <файл> - изписва всички без последните <N> реда от файла
+- $ tail <файл>- изписва последните 10 реда от файл в конзолата 
+- $ tail -n <N> <файл>- изписва последните <N> реда от файла 
+- $ tail -n +<N> <файл> - изписва редовете от файла, започвайки от <N>-тия
+- $ tail -f <файл> - изписва последните редове от файла и чака, изписвайки нови редове, добавени след това
 
 --- HELP CENTER
 - <certain command> --help - opens the basic help center of the command
