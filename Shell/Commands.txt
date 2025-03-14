@@ -84,8 +84,14 @@ Option	Description for grep
 	- $NF - last column
 - sort [options] - sorts the output of a command
 	- k[index] (k1) - sorts by i-th column
+	- t [delim] - the delimeter to split the columns of sorting by -k
 	- n - sort the lines
 	- r - sort in reverse mode
+- tr -d ' ', -s '' - can replace a certain char with another
+- tr [a-z] [A-Z] - makes all letters in the file big
+	- [:alnum] - matches alphabet and numbers == [a-z] [A-Z] [0-9]
+- cut - -f [number_of_column] -d [delim] - po default delim = '\t'
+- comm file1 file2 - prints the content of file1, file2, both file's content 
 - $ head <файл>- изписва първите 10 реда от файл в конзолата 
 - $ head -n <N> <файл>- изписва първите <N> реда от файла 
 - $ head -n -<N> <файл> - изписва всички без последните <N> реда от файла
@@ -189,7 +195,7 @@ Number	Name	Description
 			-not [other_flag] - the opposite of the other_flag
 			- [left condition] -o [right condition] - left or right condition da e izpulneno 
 			- '([operation])' - skobite imat po-visok prioritet 
-		-what to do (ACTIONS):
+		-how - what to do (ACTIONS):
 			-exec [command_to_execute] '{}' ';' or {\} \;
 			-ok - ekvivalenta na -exec, no pita dali se sigurni/iskame da izpulnim komandata
 			-printf [format_in_which_to_print_the_data] - za vseki ot failovete, kojto e podaden se printira v tozi format
@@ -211,10 +217,41 @@ Number	Name	Description
 - - apropos <kl_duma>- kazva v koq stranica se namira neshto za <kl_duma>
 - <command $(<another_command>)> - executes the <other_command> inside the current one
 - <letter>* - filename starts with this letter
-- wc <file> - print newlines, words count for a certain file
+- wc <file> - print newlines, words etc count for a certain file(naj chesto izpolzvame pri sort po broj sreshtaniq)
+	- l - lines
+	- b - bytes
+	- m - chars
+	- w - words
 - find -user - file is owned by user <uname (ID)> 
 - id - print the user/group id's
 - du - (disk usage) - stands for how many space does a certain object takes in the filesystem
+- VAJNO ZA IZPITA
+	- tar -caf <name>.tar.gz <name>(create auto file) - archive and compress with gz
+	- tar -xaf <name>.tar.gz - za razarhiviraneto
+- na izpita zaduljitelno predi da si arhivirame papkata s resheniqta i pravim kopie
+- potoci za danni
+	- input ustrojstva -> 0 - std::in
+	- 1 - std::out -> output ustrojstva (po default v terminala)
+	- 2 - std::err -> output ustrojstva (po default v terminala)
+- text > file - overwrite the current file's content with text
+- text >> file - append at the end of the file and dont clear the file's content
+- command && second_command - run command and than second_command after it
 
 zapiski:
-
+ find . -newer ./test -exec rm -i '{}'';
+- ekranirane na simvoli - escapvane na specialnite simvoli, taka che te da zagubqt specialnoto si znachenie
+- rev [file] - vseki ot redovete na faila se obrushtat
+- nl [file] - in front of each line print its number in the file
+- uniq - works only with two lines (thats why we should sort the lines first to work correctly)
+	-c - get the lines count of each line
+	-i - remove all dublicates lines no matter the letters - big/small
+	-u - remove all dublicate lines
+- cut -c 1-4 - cuts the first 4 chars for each line
+- tr [nabor ot simvoli] [zamesti s tezi simvoli] 
+	- -d [symbols] - remove all of these symbols from the file
+	- -s 'symbol' - squeeze all symbols and leave it just as one interval
+- grep [shablon] - izvejda vsichki redove, v koito se sreshta shablona
+	- v (inverse) - matches all lines which DON'T match the shablon
+	- A n - the matched line and the next n lines after it
+	- B n - the matched line and n lines before it
+	- C n - prints n lines before and n lines after + the matched line

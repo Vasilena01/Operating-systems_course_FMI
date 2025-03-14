@@ -1,0 +1,32 @@
+#!/bin/bash
+tail -n +2 planets.txt | awk -F ';' '
+BEGIN {
+    maxDist = 0
+    type = ""
+}
+{
+    if ($3 > maxDist) {
+        maxDist = $3
+        type = $2
+    }
+
+    rows[NR] = $0
+}
+END {
+    minDist = 999999
+    name = ""
+    mass = 0
+
+    for(i in rows)
+    {
+        split(rows[i], fields, ";")
+        if(fields[2] == type && fields[3] < minDist)
+        {
+            minDist = fields[3]
+            name = fields[1]
+            mass = fields[4]
+        }
+    }
+
+    print name " " mass
+}'
