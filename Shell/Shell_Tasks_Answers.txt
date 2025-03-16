@@ -65,12 +65,16 @@ but can be added: find ~ -type f -exec du -a {} \; | sort -n -r | head -n 5 | cu
 		grep -v '[a-w]' philip-j-fry.txt  | grep '[02468]' | wc -l OR
 		grep -v '[a-w]' philip-j-fry.txt | grep -c '[02468]'
 
-2017-IN-03 - 
+2017-IN-03 - cat /etc/passwd | grep "/home/Inf" | awk -F ':' '{split($5, b, ","); 
+	if(substr(b[1], length(b[1]), 1) == "а") print $1 " " b[1]}' | cut -f1 -d " " | cut -c 3,4 |
+	sort -n | uniq -c | sort -nr | head -n 1 or
+	cat /etc/passwd | grep "/home/Inf" | cut -d ':' -f1,5 | cut -d ',' -f1 | grep "а$" | 
+	cut -c 3,4 | sort -n | uniq -c | sort -nr | head -n 1
 
 2017-SE-01 - find . -type f | xargs stat -c "%h %n" | sort -k1 -n -r | head -n 5 | awk '{print $2}' or
 		find . -type f | xargs -I{} stat -c "%h %n" {} | sort -k1nr | head -n 5 | awk '{print $2}' or
 		find . -type f -printf +'%n %p\n' | sort -k1nr | head -n 5 | cut -d ' ' -f 2
- 
+
 2018-SE-02 -  find /home/pesho -type f -iname '* *' -printf "%p:%T@:%i" | sort -k2 -n -r -t ' ' | head -n 1 | cut -d ':' -f3
 
 2018-SE-03 - cat /etc/passwd | awk -F ':' '{split($1, a, "s"); split($5, b, ","); print a[2], b[1], $6}' | sort -n | awk '{print $2, $3 ": " $4}'
@@ -80,10 +84,21 @@ but can be added: find ~ -type f -exec du -a {} \; | sort -n -r | head -n 5 | cu
 | xargs -I{} awk -F ';' '{if ($2=="{}") print $0}' planets.txt | sort -k3n -t ';' | head -n1 
 | awk -F ';' '{print $1 "\t" $4}' or (the script in scripts/2019-SE-01.sh)
 
+2019-SE-02 -  cat /etc/passwd | grep "/home/SI" | awk -F ':' -v 
+time="$(find $(cut -f 6 -d ':' /etc/passwd) -maxdepth 0 -printf '%T@\n' 2>/dev/null)" 
+'if(time >= "1551168000" && time <= "1551176100"){split($1, a, "s"); split($5, b, ","); print a[2] "\t" b[1]}' or
+
+cat /etc/passwd | grep "/home/SI/" | awk -F ':' '{print $6}' | xargs -I{} find {} -maxdepth 0 -type d -printf "%C@ %p\n" | \
+ awk '{if ($1<"1551176100" && $1 >"1551168000") print $2}' | xargs -I{} grep :{}: /etc/passwd \
+ | awk -F ':' '{print $1 " " $5}' | awk '{print $1 " " $2 " " $3}' | awk -F ',' '{print $1}'
+
 2019-SE-03 -  echo "$(find -type f -inum "$(find -type f | xargs stat --format '%Y %i' | sort -n | tail -n 1 
 | awk '{print $2}')" | xargs stat --format '%i %n')" | awk -F '/' '{print NF-1}' | head -n 1
 
 2020-SE-02 -  tail -n +2 spacex.txt | sort -n -k1 -r -t '|' | awk -F '|' -v var=
 $(cat spacex.txt | awk -F '|' '{if($3 == "Failure") print $2}' 
 | sort | uniq -c | sort -nr | head -n 1 | awk '{print $2}') '{if($2==var)print $3 ":" $4}' | head -n1
+
+2023-CE-03 - find -type f -regex '.*/[a-zA-Z0-9_]+_[0-9]+\.log' | xargs grep -o -w "error" | wc -l
+
 

@@ -99,6 +99,21 @@ Option	Description for grep
 - $ tail -n <N> <файл>- изписва последните <N> реда от файла 
 - $ tail -n +<N> <файл> - изписва редовете от файла, започвайки от <N>-тия
 - $ tail -f <файл> - изписва последните редове от файла и чака, изписвайки нови редове, добавени след това
+- rev [file] - vseki ot redovete na faila se obrushtat
+- nl [file] - in front of each line print its number in the file
+- uniq - works only with two lines (thats why we should sort the lines first to work correctly)
+	-c - get the lines count of each line
+	-i - remove all dublicates lines no matter the letters - big/small
+	-u - remove all dublicate lines
+- cut -c 1-4 - cuts the first 4 chars for each line
+- tr [nabor ot simvoli] [zamesti s tezi simvoli] 
+	- -d [symbols] - remove all of these symbols from the file
+	- -s 'symbol' - squeeze all symbols and leave it just as one interval
+- grep [shablon] - izvejda vsichki redove, v koito se sreshta shablona
+	- v (inverse) - matches all lines which DON'T match the shablon
+	- A n - the matched line and the next n lines after it
+	- B n - the matched line and n lines before it
+	- C n - prints n lines before and n lines after + the matched line
 
 --- HELP CENTER
 - <certain command> --help - opens the basic help center of the command
@@ -236,22 +251,6 @@ Number	Name	Description
 - text > file - overwrite the current file's content with text
 - text >> file - append at the end of the file and dont clear the file's content
 - command && second_command - run command and than second_command after it
+- ekranirane na simvoli - escapvane na specialnite simvoli, taka che te da zagubqt specialnoto si znachenie
 
 zapiski:
- find . -newer ./test -exec rm -i '{}'';
-- ekranirane na simvoli - escapvane na specialnite simvoli, taka che te da zagubqt specialnoto si znachenie
-- rev [file] - vseki ot redovete na faila se obrushtat
-- nl [file] - in front of each line print its number in the file
-- uniq - works only with two lines (thats why we should sort the lines first to work correctly)
-	-c - get the lines count of each line
-	-i - remove all dublicates lines no matter the letters - big/small
-	-u - remove all dublicate lines
-- cut -c 1-4 - cuts the first 4 chars for each line
-- tr [nabor ot simvoli] [zamesti s tezi simvoli] 
-	- -d [symbols] - remove all of these symbols from the file
-	- -s 'symbol' - squeeze all symbols and leave it just as one interval
-- grep [shablon] - izvejda vsichki redove, v koito se sreshta shablona
-	- v (inverse) - matches all lines which DON'T match the shablon
-	- A n - the matched line and the next n lines after it
-	- B n - the matched line and n lines before it
-	- C n - prints n lines before and n lines after + the matched line
