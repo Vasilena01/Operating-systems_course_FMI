@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [[ $# -lt 1 ]] || [[ $# -gt 2 ]] ; then
+    echo "Expected 2 arguments"
+    echo "First directory"
+    echo "Optional - integer"
+    exit 1
+fi
+
+if [[ $# -eq 2 ]] ; then
+    find ${1} -mindepth 1 -type f 2>/dev/null | xargs -I{} stat -c "%h %n" {} | awk -v var=${2} '{if (var==$1) print $2}'
+else
+    find ${1} -mindepth 1 -type l 2>/dev/null -exec test ! -e {} \; -print
+fi

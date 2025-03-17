@@ -215,6 +215,27 @@ Number	Name	Description
 			-ok - ekvivalenta na -exec, no pita dali se sigurni/iskame da izpulnim komandata
 			-printf [format_in_which_to_print_the_data] - za vseki ot failovete, kojto e podaden se printira v tozi format
 
+--- PROCESSES
+- ps - returns the current running processes
+	- u [username] - returns the running processes of the given user
+	- e - returns all running processes
+	- ef - показва много информация за всички процеси
+	- o можем да включим специфични колонки в изхода на ps
+		- ps -u pesho -o pid,ppid,cmd - за всеки процес на потребителя pesho, изписва неговия PID, родителски PID и командa
+- top - показва информация за процесите в интерактивен режим
+- pstree - рисува дърво с процесите
+- jobs показва всички процеси в текущата сесия и техните job ID-та
+-  fg <job id> закача фонов процес към терминала
+-  bg <job id> стартира паузиран працес във фонов режим
+
+--- VARIABLES
+- env извежда цялата таблица с environment променливи на текущия shell
+- export <име на променлива>=<стойност> задава стойност на environment променлива
+-  Командата $ env <var1>=<val1> <var2>=<val2> ... <команда> може да се използва за да стартираме дадена команда с модифицирани environment променливи
+	- Опцията -i игнорира всички съществуващи environment променливи и стартира командата само с тези, подадени директно на env
+-  alias <име>=<команда> можем да създадем кратко име за често използвани команди
+-  unalias <име> можем да изтрием alias
+
 --- SCRIPTS:
 # - stores the total count of arguments passed after the script name, after its execution
 
@@ -252,5 +273,18 @@ Number	Name	Description
 - text >> file - append at the end of the file and dont clear the file's content
 - command && second_command - run command and than second_command after it
 - ekranirane na simvoli - escapvane na specialnite simvoli, taka che te da zagubqt specialnoto si znachenie
+- chsh - smenqme shella po podrazbirane
+- Ако искаме някоя команда да се изпълнява при стартиране на всеки
+shell, можем да я сложим в скрипта ~/.bashrc
+- Ако искаме някоя команда да се изпълнява при всеки логин, може да я
+сложим в ~/.profile
 
 zapiski:
+vuprosi:
+- Можем да зададем стойност на променлива с <име на
+променлива>=<стойност>
+- Можем да реферираме променлива с ${<име на променлива>}
+- работи по подобен начин като command substitution
+- можем да използваме и по-кратката конструкция $<име на променлива>
+(без къдрави скоби), но тя е по-опасна
+- защо винаги искаме да реферираме към променливата с "${}" - защо са ни тези кавички
