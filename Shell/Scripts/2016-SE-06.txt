@@ -1,0 +1,39 @@
+#!/bin/bash
+
+if [[ $# -ne 1 ]]; then
+    echo "Number of arguments should be equal to one."
+    exit 1
+fi
+
+if [[ ! -f "${1}" ]]; then
+    echo "File does not exist"
+    exit 1
+fi
+
+filename="$1"
+
+cat "$filename" | cut -f 4- -d " " | sort | awk 'BEGIN{count=0} {count += 1} {print count ". " $0}'
+
+or - real solution
+
+#!/bin/bash
+
+if [[ $# -ne 1 ]] ; then
+        echo "Expected 1 argument - file name"
+        exit 1
+fi
+
+if [[ ! -f "${1}" ]] ; then
+        echo "File does not exist"
+        exit 1
+fi
+
+counter=1
+
+while read line ; do
+        line=$(echo ${line} | awk -F '-' '{for (i=2;i<=NF;i++) print $i}')
+        lines+="${counter}.${line}\n"
+        counter=$(( counter + 1 ))
+done < ${1}
+
+echo -e ${lines} | sort -k2 -t '"'

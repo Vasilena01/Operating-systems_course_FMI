@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [[ $# -ne 1 ]]; then
+    echo "Number of arguments should be equal to one."
+    exit 1
+fi
+
+if [[ ! -f "${1}" ]]; then
+    echo "File does not exist"
+    exit 1
+fi
+
+filename1="$1"
+filename2="$2"
+
+file1occur=$(cat "$filename1" | grep "$filename1" | wc -l)
+file2occur=$(cat "$filename2" | grep "$filename2" | wc -l)
+
+resultname=""
+if [ "$file1occur" -gt  "$file2occur" ]; then
+    resultname="$filename1"
+else
+    resultname="$filename2"
+fi
+
+resultfilecontent=$(cat "$resultname" | cut -f 4- -d " " | sort)
+echo "$resultfilecontent" > "$resultname.songs"
