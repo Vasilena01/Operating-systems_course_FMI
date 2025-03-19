@@ -1,0 +1,31 @@
+#!/bin/bash
+
+if [[ $# -eq 0 ]]; then
+    echo "Invalid number of arguments"
+    exit 1
+fi
+
+if [[ ! -d $1 ]]; then
+    echo "Not a directory"
+    exit 2
+fi
+
+BROKEN_LINKS=$(find $1 -type l -exec test ! -e {} \; -print 2>/dev/null | wc -l)
+
+find ${1} -mindepth 1 2>/dev/null -type l | while read -r symlink; do
+    target=$(readlink -f "$symlink")
+
+    if [[ -e "$target" ]]; then
+       if [[ $# -eq 2 ]]; then
+          echo "$symlink -> $target" >> $2
+       else
+          echo "$symlink -> $target"
+       fi
+    fi
+done
+
+if [[ $# -eq 2 ]]; then
+    echo "Broken count: $BROKEN_LINKS" >> $2
+else
+    echo "Broken count: $BROKEN_LINKS"
+fi

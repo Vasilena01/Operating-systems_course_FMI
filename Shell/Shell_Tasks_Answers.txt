@@ -39,7 +39,13 @@ PIPES FROM GITHUB EXERCISES:
 - 03-b-0300 - awk -F ':' 'BEGIN {groupId = 0} {if($1 == "s0600290") {groupId = $4}} END{print groupId}' /etc/passwd
 		- grep $(id -u) /etc/passwd | cut -d ':' -f4
 - 03-b-3400 - cat /etc/services | awk 'BEGIN{count=0} {for(i=1;i <= length($0); i++)
-	{if(substr($0, i, 1) == "#"){count++}{ break}}} END{print count}'
+	{if(substr($0, i, 1) == "#"){count++}{ break}}} END{print count}' or grep '#' | wc -l
+- 03-b-3500 - find /bin -type f -exec cat {} ';' | grep '#!/bin/bash' | wc -l and
+	find /bin -type f -exec cat {} ';' | grep 'ASCII text executable' | wc -l
+- 03-b-3600 - find / -maxdepth 3 >/dev/null 2> sol.txt; cat sol.txt | cut -d ':' -f2 | tr -d ''
+- 03-b-4001 - cat foo.txt | tr 'a-z' 'A-Z' > footemp.txt; mv footemp.txt foo.txt
+- 03-b-4002 - cat bar.txt | tr -d '1' > bartemp.txt; mv bartemp.txt bar.txt
+- 03-b-4004 - cat bar.txt foo.txt > res.txt
 
 COMMANDS FROM THE PROBLEM SET:
 2017-IN-01 - find -user $(id -u) 2>/dev/null | wc -l
@@ -99,6 +105,6 @@ cat /etc/passwd | grep "/home/SI/" | awk -F ':' '{print $6}' | xargs -I{} find {
 $(cat spacex.txt | awk -F '|' '{if($3 == "Failure") print $2}' 
 | sort | uniq -c | sort -nr | head -n 1 | awk '{print $2}') '{if($2==var)print $3 ":" $4}' | head -n1
 
-2023-CE-03 - find -type f -regex '.*/[a-zA-Z0-9_]+_[0-9]+\.log' | xargs grep -o -w "error" | wc -l
+2023-CE-03 - find -type f -regex '.*/[a-zA-Z0-9_]+_[0-9]+\.log' | xargs grep -o -w "error" | wc -l 
 
 

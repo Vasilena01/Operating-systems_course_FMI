@@ -88,7 +88,7 @@ Option	Description for grep
 	- n - sort the lines
 	- r - sort in reverse mode
 - tr -d ' ', -s '' - can replace a certain char with another
-- tr [a-z] [A-Z] - makes all letters in the file big
+- tr 'a-z' 'A-Z' - makes all letters in the file big
 	- [:alnum] - matches alphabet and numbers == [a-z] [A-Z] [0-9]
 - cut - -f [number_of_column] -d [delim] - po default delim = '\t'
 - comm file1 file2 - prints the content of file1, file2, both file's content 
@@ -235,6 +235,22 @@ Number	Name	Description
 	- Опцията -i игнорира всички съществуващи environment променливи и стартира командата само с тези, подадени директно на env
 -  alias <име>=<команда> можем да създадем кратко име за често използвани команди
 -  unalias <име> можем да изтрием alias
+- При извикване на команда, shell-ът търси изпълним файл със съответното име в директориите, изброени в променливата ${PATH}
+• ${SHELL} – пълен път до текущия shell
+• ${USER} – потебителско име на текущия потребител
+• ${HOME} – home директория на текущия потребител
+• ${PS1} – низ, управляващ prompt-а
+• ${PATH} – пътища за търсене на команди
+• ${PWD} – текуща директория
+• ${IFS} – Internal Field Separator
+• ${EDITOR} – текстов редактор по подразбиране
+- Променливата ${0} съдържа името (пътя) на самия скрипт
+- Променливата ${#} съдържа броя параметри
+- Променливата ${@} съдържа всички параметри - има специално поведение в кавички - "${@}" се разпакетира до "${1}" "${2}" "${3}" ...
+- Променливата ${*} също съдържа всички параметри - няма допълнително специално поведение "${*}" се разпакетира до "${1} ${2} ${3} ..."
+-  read <име на променлива> четем данни от stdin
+- read -p <prompt> показва някакъв prompt на потребителя преди да чака за вход
+
 
 --- SCRIPTS:
 # - stores the total count of arguments passed after the script name, after its execution
@@ -288,3 +304,5 @@ vuprosi:
 - можем да използваме и по-кратката конструкция $<име на променлива>
 (без къдрави скоби), но тя е по-опасна
 - защо винаги искаме да реферираме към променливата с "${}" - защо са ни тези кавички
+- find /bin -type f -exec cat {} ';' | grep '#!/bin/bash' | wc -l kakva e razlikata mejdu tova i tova: find /bin -type f| grep '#!/bin/bash' | wc -l
+	grep nujno li e da mu se podade faila s cat ili moje da raboti i bez
