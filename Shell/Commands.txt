@@ -226,7 +226,22 @@ Number	Name	Description
 - pstree - рисува дърво с процесите
 - jobs показва всички процеси в текущата сесия и техните job ID-та
 -  fg <job id> закача фонов процес към терминала
--  bg <job id> стартира паузиран працес във фонов режим
+-  bg <job id> стартира паузиран прoцес във фонов режим
+- alias get_value="cat /etc/passwd|grep 'vasi'"
+	v consolata kato napisha veche get_value - shte mi se zamesti komandata
+- env - env variables
+	- export TEMP=temp (iztriva se v kraq na sesiqta)
+	- env TEMP=temp (nachin da vkarame env vars v scripta, bez da zasqgat cqlata ni sesiq)
+	- konfigurirame v bash.rc(za vsqka sesiq) ili bash.login(za vseki login)
+- ps:
+	-e - gives info about all processes
+	-o columns_names: pid=New_name_optional,time=,cmd= - which columns to return
+	-aux - returns the cpu, virtual memory and local memory which the process takes - naj-chesto se izpolzva tova v zadachite
+- kill - kills a running process
+	-9 <pid> - seek kill(naj-chesto se izpolzva)
+	- killall - kills all the processes
+- sleep <time> <process> - prespiva process
+	- sleep <time> <process> & - prespiva process v background
 
 --- VARIABLES
 - env извежда цялата таблица с environment променливи на текущия shell
@@ -251,9 +266,36 @@ Number	Name	Description
 -  read <име на променлива> четем данни от stdin
 - read -p <prompt> показва някакъв prompt на потребителя преди да чака за вход
 
+--- REGEX:
+- chesto se davat tekstova obrabotka ednata zad i drugata za procesi
+- * (>= 0)
+- +(>= 1)
+- ? (1 proizvolen)
+- [aouei] - match these symbols
+- [^aouei] - match everything except these symbols
+- [symbols]{3} - = 3 sr.
+- [symbols]{,3} - <= 3 sr.
+- [symbols]{3,} - >= 3 sr.
+- - [symbols]{3,4} - 3-4 sr.
+- (cat|dog).*\1 - ako iskame da se povtarq cat sled proizvolniq simvol
+- (drugo)(cat|dog).*\2 - 2 zashtoto iskame 2-rata grupa(cat or dog) da se povtarq sled proizvolniq simvol
+- (cat | dog)
+- ^ - znak za nachalo na red
+- \< = \b - nachalo na duma
+- $ - znak za kraj na red
+- \> = \b - kraj na duma
+- \b<duma>\b - nachalo ili kraj na duma
 
 --- SCRIPTS:
-# - stores the total count of arguments passed after the script name, after its execution
+- - !#bin/bash
+- variables declaration - 4 ways: $var or ${var} or "$var" (we use the "" because the spaces are threated as part of the var_name) or "${var}" (izpolzvame primer 4)
+- spaces - 3,4
+- brace expansion - 2,4
+- "${@}" - vrushta vsichki argumenti podadeni na scripta - "${1}" "${2}" ...
+- "${*}" - (PO-DOBROTO) vrushta vsichki argumenti podadeni na scripta - "${1} ${2}..."
+- "${$#}" - broj na argumentite (broim ot nulata)
+- var="$(command)"
+- var="${variable}"
 
 --- OTHER
 - command|command|command... - gets the output from the left command and pass it as input to the right command
@@ -296,13 +338,8 @@ shell, можем да я сложим в скрипта ~/.bashrc
 сложим в ~/.profile
 
 zapiski:
+Scripts:
+Other:
+
 vuprosi:
-- Можем да зададем стойност на променлива с <име на
-променлива>=<стойност>
-- Можем да реферираме променлива с ${<име на променлива>}
-- работи по подобен начин като command substitution
-- можем да използваме и по-кратката конструкция $<име на променлива>
-(без къдрави скоби), но тя е по-опасна
-- защо винаги искаме да реферираме към променливата с "${}" - защо са ни тези кавички
-- find /bin -type f -exec cat {} ';' | grep '#!/bin/bash' | wc -l kakva e razlikata mejdu tova i tova: find /bin -type f| grep '#!/bin/bash' | wc -l
-	grep nujno li e da mu se podade faila s cat ili moje da raboti i bez
+- kakvo pravqt fg i bg

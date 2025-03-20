@@ -47,6 +47,9 @@ PIPES FROM GITHUB EXERCISES:
 - 03-b-4002 - cat bar.txt | tr -d '1' > bartemp.txt; mv bartemp.txt bar.txt
 - 03-b-4004 - cat bar.txt foo.txt > res.txt
 
+PROCESSES:
+- 04-a-5000 - ps -e --sort etimes -o cmd | tail -n 10
+
 COMMANDS FROM THE PROBLEM SET:
 2017-IN-01 - find -user $(id -u) 2>/dev/null | wc -l
 !2017-IN-02 - 1) find ./ -type f -size 0 -delete; 2) find ~ -type f -exec du -a {} \; | sort -n -r | head -n 5,
