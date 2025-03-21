@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [[ ${#} -ne 3 ]]; then
+    echo "Arguments count must be 3"
+    exit 1
+fi
+
+if [[ ! -f ${1} ]]; then
+    echo "The first arg must be a valid file"
+    exit 1
+fi
+
+args1=$(cat "${1}" | egrep "^${2}=" | awk -F '=' '{print $2}' | tr ' ' '\n')
+args2=$(cat "${1}" | egrep "^${3}=" | awk -F '=' '{print $2}' | tr ' ' '\n')
+
+while read word; do
+    echo "${args1}" | grep -q "${word}"
+    if [[ ${?} -ne 0 ]]; then
+        result+=$(echo "${word} ")
+    fi
+done < <(echo "${args2}")
+
+sed -i -E "s/(${3}=).*/\1${result}/g" ${1}
