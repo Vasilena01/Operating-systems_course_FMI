@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [[ $# -ne 2 ]]; then
+    echo "Args count must be 2"
+    exit 1
+fi
+
+dir="$1"
+str="$2"
+
+files=$(find $dir -maxdepth 1 -mindepth 1 | grep -e "vmlinuz-[0-9]\+\.[0-9]\+\.\*${str}")
+result=$(echo "${files}" | sort -r -t '.' -k1,3 | head -n 1 | awk -F '/' '{print $NF}')
+echo "${result}"

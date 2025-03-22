@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [[ $# -ne 3 ]]; then
+    echo "Args count must be 3"
+    exit 1
+fi
+
+src=$1
+dst=$2
+abc=$3
+
+if [[ ! -d ${src} ]] || [[ ! -d ${dst} ]] || [[ $(find ${dst} -mindepth 1 | wc -l) -ne 0 ]]; then
+    echo "Arguments 1 and 2 should be valid dirs and arg 2 should be an empty dir"
+    exit 1
+fi
+
+# If the script is not run by the root
+if [[ $(id -u) -ne 0 ]]; then
+    for file in $(find ${src} -type f | grep "${abc}"); do
+        full_path=$(echo "${file}" | sed 's|src/||')
+        depth=$(echo "${full_path}" | grep -o '/' | wc -l)
+        real_path=$(dirname $full_path)
+        
+        if [[ ${depth} -ne 0 ]]; then
+            mkdir -p "${dst}/${real_path}"
+        fi
+
+        mv ${file} "${dst}/${real_path}"
+    done
+fi

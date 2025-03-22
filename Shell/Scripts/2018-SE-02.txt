@@ -1,0 +1,72 @@
+#!/bin/bash
+
+if [[ $# -ne 2 ]]; then
+    echo "Args count must be 2"
+    exit 1
+fi
+
+if [[ $(find $2 -mindepth 1 | wc -l) -ne 0 ]]; then
+    echo "The dir should be empty"
+    exit 1
+fi
+
+# My solution without array
+file=$1
+dir=$2
+touch ${dir}/dict.txt
+
+counter=1
+
+while read line; do
+    name=$(echo "$line" | egrep -o "^[a-zA-Z-]+\s+[a-zA-Z-]+")
+    file_line=$(grep -F "${name};" "${dir}/dict.txt")
+
+    if [[ -z "$file_line" ]]; then
+        echo "${name};${counter}" >> "${dir}/dict.txt"
+
+        touch "${dir}/${counter}.txt"
+        echo "${line}" >> "${dir}/${counter}.txt"
+
+        counter=$((counter + 1))
+    else
+        index=$(echo "${file_line}" | cut -d ';' -f 2)
+        echo "${line}" >> "${dir}/${index}.txt"
+    fi
+done < <(cat ${file})
+
+# Real solution - with array
+#!/bin/bash
+
+if [[ ${#} -ne 2 ]] ; then
+        echo "Expected 2 arguments"
+        exit 1
+fi
+
+dir=${1}
+all_types=$(find ${dir} | wc -l)
+files_count=$(find ${dir} -type f | wc -l)
+dirs_count=$(find ${dir} -type d | wc -l)
+if [[ $(( files_count + dirs_count )) -ne ${all_types} ]] ; then
+        echo "Directory should not contain objects"
+        exit 1
+fi
+
+file=${2}
+counter=1
+declare -A arr
+touch "${dir}/dict.txt"
+while read line ; do
+        name=$(echo "${line}" | awk '{print $1 " " $2}' | awk -F ':' '{print $1}' | awk -F '(' '{print $1}')
+        file_name=$(echo "${name}" | tr ' ' '_')
+        echo "${file_name}"
+        if [[ ! -v arr[${file_name}]  ]] ; then
+                arr[${file_name}]=${counter}
+                touch "${dir}/${counter}.txt"
+                echo "${name};${counter}" >> "${dir}/dict.txt"
+                echo "${line}" >> "${dir}/${arr[${file_name}]}.txt"
+                counter=$(( counter + 1 ))
+        else
+                echo "${line}" >> "${dir}/${arr[${file_name}]}.txt"
+        fi
+        echo "${arr[${file_name}]}"
+done < <(cat ${file})

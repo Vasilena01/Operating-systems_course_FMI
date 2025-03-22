@@ -1,0 +1,29 @@
+#!/bin/bash
+
+if [[ $# -ne 2 ]]; then
+    echo "Args count must be 2"
+    exit 1
+fi
+
+file1=$1
+file2=$2
+
+> "${file2}"
+
+while read line; do
+    id=$(echo "${line}" | cut -d ',' -f 1)
+    data=$(echo "${line}" | cut -d ',' -f 2-)
+
+    existing_line=$(grep -F ",$data" "${file2}")
+
+    if [[ -n "${existing_line}" ]]; then
+        existing_id=$(echo "${existing_line}" | cut -d ',' -f 1)
+        if [[ $id -lt $existing_id ]]; then
+            echo $id
+            echo $existing_id
+            sed -i "s/^${existing_id},.*/${line}/" "${file2}"
+        fi
+    else
+        echo "${line}" >> "${file2}"
+    fi
+done < <(cat $file1)
