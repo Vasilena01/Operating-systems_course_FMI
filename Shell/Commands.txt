@@ -349,5 +349,7 @@ Scripts:
 Other:
 
 vuprosi:
+- kato deklariram promenliva v tqloto na if v script tq do kraq na scripta ili do kraq na ifa e validna
+- what does NF and NR in awk means
 - kakvo pravqt fg i bg
 - kakvo oznachavat zaglaviqta na zadachite i kak da razberem koi sa davani

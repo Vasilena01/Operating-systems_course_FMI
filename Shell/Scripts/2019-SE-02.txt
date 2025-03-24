@@ -1,0 +1,29 @@
+#!/bin/bash
+
+if [[ ${#} -lt 1 ]] ; then
+    echo "At least 1 argument expected"
+    exit 1
+fi
+
+if [[ ${1} == "-n" ]]; then
+    N=${2}
+else
+    N=10
+fi
+
+for file in ${@}; do
+    if [[ ! -f ${file} ]]; then
+        continue
+    fi
+
+    # Basename extracts only the filename without the path itself
+    idf=$(basename $file .log)
+    while read line; do
+        timestamp=$(echo "${line}" | awk '{print $1 " " $2}')
+        data=$(echo "${line}" | awk '{for (i=3;i<=NF;i++) printf "%s ", $i}')
+        result+="${timestamp} ${idf} ${data}"
+        result+=$'\n'
+    done < <(cat ${file})
+done
+
+echo "${result}" | sort | tail -n ${N}
