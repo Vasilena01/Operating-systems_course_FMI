@@ -1,0 +1,44 @@
+#!/bin/bash
+
+if [[ $# -ne 2 ]]; then
+    echo "Params count must be 2"
+    exit 1
+fi
+
+if [[ ! -d ${2} ]]; then
+    echo "Unvalid dirname"
+    exit 1
+fi
+
+csv_file=${1}
+dir_name=${2}
+
+touch "${csv_file}"
+> ${csv_file}
+
+echo "hostname,phy,vlans,hosts,failover,VPN-3DES-AES,peers,VLAN Trunk Ports,license,SN,key" >> ${csv_file}
+#echo $'\n' >> ${csv_file}
+
+for file in $(find ${dir_name} -type f); do
+    filename=$(basename "${file}")
+    result+="${filename},"
+    while read line; do
+        echo "${line}" | grep -q 'license'
+        if [[ $? -eq 0 ]]; then
+            license=$(echo "${line}" | awk '{for (i=5;i<NF;i++) printf "%s ", $i}')
+            result+="${license},"
+        fi
+
+        data=$(echo "${line}" | awk -F ':' '{print $2}')
+        if [[ ! -z "${data}" ]]; then
+            result+="${data},"
+        fi
+    done < <(cat "${file}")
+    result+=$'\n'
+done
+
+echo "${result}" >> ${csv_file}
+sed -E -i 's/,$//g' ${csv_file}
+sed -E -i 's/, */,/g' ${csv_file}
+sed -E -i 's/[[:space:]]+,/,/g' ${csv_file}
+sed -i '/^$/d' ${csv_file}
