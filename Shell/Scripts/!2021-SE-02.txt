@@ -1,0 +1,50 @@
+#!/bin/bash
+
+for file in ${@}; do
+   filename=$(basename ${file})
+   serial_changed_successfuly=0
+   while read line; do
+         rdata=$(echo "${line}" | awk '{for(i=5;i<=NF;i++) printf "%s ",$i}')
+         echo "${rdata}" | grep -q '('
+
+         # Get the serial num based on the content's write style
+         if [[ $? -eq 0 ]]; then
+             line_to_edit=$(cat "${file}" | grep 'serial')
+             serial_num=$(echo "${line_to_edit}" | sed -E 's/.;.serial.//')
+         else
+             serial_num=$(echo "${rdata}" | egrep -o '[a-z0-9.][0-9]+' | head -n 1 | egrep -o '[0-9]+')
+         fi
+
+         if [[ -z ${serial_num} ]]; then
+             continue
+         fi
+
+         # Removes leading/trailing spaces
+         serial_num=$(echo "${serial_num}" | tr -d '[:space:]')
+
+         current_date=$(date +%F | tr -d '-')
+         serial_date=$(echo ${serial_num} | head -c 8)
+         if [[ ${serial_date} -lt ${current_date} ]]; then
+             new_serial="${current_date}00"
+         elif [[ ${serial_date} -eq ${current_date} ]]; then
+             new_serial=$((serial_num + 1))
+         fi
+
+         if [[ $(echo "${new_serial}" | wc -c) -gt 11 ]]; then
+            echo "Serial num for file ${filename} must be 10 digits with last two between 00-99"
+            exit 1
+         fi
+
+         sed -i "s/${serial_num}/${new_serial}/g" "${file}"
+
+         if [[ $? -eq 0 ]]; then
+             serial_changed_successfuly=1
+             break
+         fi
+   done < <(cat ${file})
+
+   if [[ ${serial_changed_successfuly} -eq 0 ]]; then
+         echo "Problem with editing file ${filename} is not correctly structured"
+         exit 1
+   fi
+done

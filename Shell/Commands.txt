@@ -351,5 +351,8 @@ Other:
 vuprosi:
 - kato deklariram promenliva v tqloto na if v script tq do kraq na scripta ili do kraq na ifa e validna
 - what does NF and NR in awk means
+- kakva e razlikata mejdu  echo "${line}" | grep 'license' i grep 'license' ${line} v podavaneto na argumenta
+- filename=$(basename "${file}") - moga li da izpolzvam komandata basename
+- da mi pogledne reshenieto na zad 2020-SE-02
 - kakvo pravqt fg i bg
 - kakvo oznachavat zaglaviqta na zadachite i kak da razberem koi sa davani

@@ -1,0 +1,43 @@
+#!/bin/bash
+
+if [[ $# -ne 1 ]]; then
+    echo "1 param required"
+    exit 1
+fi
+
+filename="$1"
+
+function getHTTP2reqsCount {
+    http2count=0
+    while read -r line; do
+        grep -iq 'HTTP/2.0' <<< "$line" && ((http2count++))
+    done < <(grep -E "[0-9.]+.${client}" "$filename")
+}
+
+function getNonHTTP2reqsCount {
+    nonhttp2count=0
+    while read -r line; do
+        grep -iqE '(HTTP/1.0|HTTP/1.1)' <<< "$line" && ((nonhttp2count++))
+    done < <(grep -E "[0-9.]+.${client}" "$filename")
+}
+
+function getSpecialReqsCount {
+    special_count=0
+    while read -r line; do
+        status_code=$(awk '{print $9}' <<< "$line")
+        [[ $status_code -gt 302 ]] && ((special_count++))
+    done < <(grep -i "^${address}" "$filename")
+}
+
+# Process top 3 clients
+while read -r count client; do
+    getHTTP2reqsCount "$client"
+    getNonHTTP2reqsCount "$client"
+    echo "${client} HTTP/2.0: $http2count non-HTTP/2.0: $nonhttp2count"
+done < <(cut -d' ' -f2 "$filename" | sort | uniq -c | sort -nr | head -n 3)
+
+# Process top 5 client addresses
+while read -r count address; do
+    getSpecialReqsCount "$address"
+    echo "$special_count ${address}"
+done < <(cut -d' ' -f1 "$filename" | sort | uniq -c | sort -nr | head -n 5)
