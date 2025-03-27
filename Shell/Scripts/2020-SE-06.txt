@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [[ $# -ne 3 ]]; then
+    echo "Args count must be 3"
+    exit 1
+fi
+
+file=${1}
+key=${2}
+value=${3}
+user=$(whoami)
+date=$(date)
+
+line=$(cat ${file} | grep "${key}")
+if [[ ! -z $line ]]; then
+    sed -i -E "/${line}/{
+        s/^/# /
+        s/$/ # edited at ${date} by ${user}/
+        a ${key} = ${value} #added at ${date} by ${user}
+    }" "${file}"
+else
+    echo "${key} = ${value} #added at ${date} by ${user}" >> ${file}
+fi

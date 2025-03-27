@@ -1,0 +1,41 @@
+#!/bin/bash
+
+if [[ $# -ne 2 ]]; then
+    echo "Args count must be 2"
+    exit 1
+fi
+
+if [[ ! -d $1  || ! -d $2 ]]; then
+    echo "Params must be valid dirs"
+    exit 1
+fi
+
+if [[ $(find $2 -mindepth 1 -type d | wc -l) -gt 0 ]]; then
+    echo "Dir2 must be empty"
+    exit 1
+fi
+
+dir1=${1}
+dir2=${2}
+
+while read line; do
+    filename=$(basename ${line})
+    dirname=$(dirname ${line})
+    path=$(echo ${dirname} | cut -d '/' -f2-)
+
+    temp_file=$(echo ${filename} | egrep "\.[0-9a-zA-Z]*\.swp$")
+    if [[ $? -eq 0 ]]; then
+        temp_name=$(echo ${temp_file} | sed -E "s/^\.(.*)\.swp$/\1/")
+        temp_occur=$(find ${dir1} -type f | egrep "${temp_name}" | wc -l)
+        if [[ ${temp_occur} -gt 1 ]]; then
+            continue
+        fi
+    fi
+
+    if [[ ${dirname} != ${path} ]]; then
+        mkdir -p "${dir2}/${path}"
+        cp -r "${line}" "${dir2}/${path}"
+    else
+        cp -r "${line}" "${dir2}"
+    fi
+done < <(find ${dir1} -type f)

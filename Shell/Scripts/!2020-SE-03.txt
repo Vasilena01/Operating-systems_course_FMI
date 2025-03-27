@@ -1,0 +1,32 @@
+#!/bin/bash
+
+if [[ $# -ne 2 ]]; then
+    echo "Args count must be two"
+    exit 1
+fi
+
+repo=${1}
+package=${2}
+
+# Extract important info about the package
+package_name=$(basename ${package})
+package_version=$(cat "${package}/version" | egrep -o '([0-9]*\.){2}[0-9]*-[0-9]*')
+
+# Archive the package
+temp_dir=$(mktemp -d)
+tar -caf "${temp_dir}/${package_name}.tar.xz" "${package}"
+sha256_code=$(sha256sum "${temp_dir}/${package_name}.tar.xz" | awk '{print $1}')
+
+# Add the archived package to repo
+if [[ -f "${repo}/packages/${sha256_code}.tar.xz" ]]; then
+   rm "${repo}/packages/${sha256_code}.tar.xz"
+fi
+
+mv "${temp_dir}/${package_name}.tar.xz" "${repo}/packages/${sha256_code}.tar.xz"
+
+package_all="${package_name}-${package_version} ${sha256_code}"
+cat ${repo}/db | grep -q "${package_all}"
+if [[ $? -ne 0 ]]; then
+    echo "${package_all}" >> ${repo}/db
+    sort "${repo}/db" > "${repo}/db.tmp" && mv "${repo}/db.tmp" "${repo}/db"
+fi

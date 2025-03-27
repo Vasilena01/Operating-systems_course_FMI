@@ -1,0 +1,46 @@
+a)
+#!/bin/bash
+
+if [[ $# -eq 0 ]]; then
+    echo "Provide min 1 arg"
+    exit 1
+fi
+
+tempfile=$(mktemp)
+for line in ${@}; do
+    echo ${line} | egrep -q "^[-]{0,1}[0-9]*$"
+    if [[ ${?} -eq 0 ]] ; then
+        echo "${line}" >> ${tempfile}
+    fi
+done
+
+max_value=$(cat ${tempfile} | tr -d '-' | sort -nr | head -n 1)
+
+cat ${tempfile} | egrep "[-]{0,1}${max_value}"
+rm ${tempfile}
+
+b)
+#!/bin/bash
+
+if [[ $# -eq 0 ]]; then
+   echo "Min 1 arg required"
+   exit 1
+fi
+
+tempfile=$(mktemp)
+for line in ${@}; do
+    echo ${line} | egrep -q "^[-]{0,1}[0-9]*$"
+    if [[ ${?} -eq 0 ]] ; then
+        echo "${line}" >> ${tempfile}
+    fi
+done
+
+numsTemp=$(mktemp)
+while read line; do
+   echo ${line} | awk -F '' 'BEGIN {sum=0}{for (i=1;i<=NF;i++){sum+=$i}} END {print sum " " $0}' >> ${numsTemp}
+done < <(cat ${tempfile})
+
+cat ${numsTemp} | sort -n -k1 -r | sort -n -k2 | cut -d ' ' -f2 | head -n 1
+
+rm ${tempfile}
+rm ${numsTemp}

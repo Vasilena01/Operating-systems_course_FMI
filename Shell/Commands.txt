@@ -160,7 +160,7 @@ Option	Description
 --- DESCRIPTORS - a low-level intiger used from the os to access files/resources:
 Number	Name	Description
 0	stdin	Standard input (e.g., keyboard input or input from a pipe).
-1	stdout	Standard output (e.g., output displayed on the terminal).
+1	stdout	Standard output (e.g., output displayed on the terminal)./
 2	stderr	Standard error (e.g., error messages displayed on the terminal).
 3+	Custom	Used for additional files or resources.
 
@@ -297,10 +297,13 @@ Number	Name	Description
 - "${*}" - (PO-DOBROTO) vrushta vsichki argumenti podadeni na scripta - "${1} ${2}..."
 - "${$#}" - broj na argumentite (broim ot nulata)
 - "${?}" - gets the exit status of the last runned command
+- "${!}" - pid of the last command set in background regime
 - var="$(command)"
 - var="${variable}"
 - read - chetene v script on stdin
 	-p "some text" - prompts the text in front of the input of the user
+- shift n - shifts the arguments passed to the script (than we will use the args from n to the last arg)
+- mktemp <file> - creates a temp file, but at the end of the script: rm <file> !!!
 
 --- OTHER
 - command|command|command... - gets the output from the left command and pass it as input to the right command
@@ -345,12 +348,14 @@ shell, можем да я сложим в скрипта ~/.bashrc
 - grep --color - returns the line with highligted matched word
 
 zapiski:
+awk:
+	- $NF - number of fields for curr row
+	- $NR - current row
 Scripts:
 Other:
 
 vuprosi:
-- kato deklariram promenliva v tqloto na if v script tq do kraq na scripta ili do kraq na ifa e validna
-- what does NF and NR in awk means
+- how to read args from stdin with: while read line; do...done
 - kakva e razlikata mejdu  echo "${line}" | grep 'license' i grep 'license' ${line} v podavaneto na argumenta
 - filename=$(basename "${file}") - moga li da izpolzvam komandata basename
 - da mi pogledne reshenieto na zad 2020-SE-02
