@@ -5,39 +5,47 @@ if [[ $# -ne 1 ]]; then
     exit 1
 fi
 
-filename="$1"
+filename=${1}
 
 function getHTTP2reqsCount {
     http2count=0
-    while read -r line; do
-        grep -iq 'HTTP/2.0' <<< "$line" && ((http2count++))
-    done < <(grep -E "[0-9.]+.${client}" "$filename")
+    while read line; do
+        echo ${line} | egrep -q -i 'HTTP/2.0'
+        if [[ $? -eq 0 ]]; then
+            http2count=$((http2count + 1))
+        fi
+    done < <(cat ${filename} | egrep "[0-9]+(\.[0-9]+){3}.${client}")
 }
 
 function getNonHTTP2reqsCount {
     nonhttp2count=0
-    while read -r line; do
-        grep -iqE '(HTTP/1.0|HTTP/1.1)' <<< "$line" && ((nonhttp2count++))
-    done < <(grep -E "[0-9.]+.${client}" "$filename")
+    while read line; do
+        echo ${line} | egrep -q -i '(HTTP/1.0 | HTTP/1.1)'
+        if [[ $? -eq 0 ]]; then
+            nonhttp2count=$((nonhttp2count + 1))
+        fi
+    done < <(cat ${filename} | egrep "[0-9]+(\.[0-9]+){3}.${client}")
 }
 
 function getSpecialReqsCount {
     special_count=0
-    while read -r line; do
-        status_code=$(awk '{print $9}' <<< "$line")
-        [[ $status_code -gt 302 ]] && ((special_count++))
-    done < <(grep -i "^${address}" "$filename")
+    while read line; do
+        status_code=$(echo ${line} | awk -F ' ' '{print $9}')
+        if [[ ${status_code} -gt 302 ]]; then
+            special_count=$((special_count + 1))
+        fi
+    done < <(cat ${filename} | egrep -i "^${address}")
 }
 
-# Process top 3 clients
-while read -r count client; do
-    getHTTP2reqsCount "$client"
-    getNonHTTP2reqsCount "$client"
+while read line; do
+    client=$(echo "${line}" | cut -d ' ' -f2)
+    getHTTP2reqsCount "${client}"
+    getNonHTTP2reqsCount "${client}"
     echo "${client} HTTP/2.0: $http2count non-HTTP/2.0: $nonhttp2count"
-done < <(cut -d' ' -f2 "$filename" | sort | uniq -c | sort -nr | head -n 3)
+done < <(cat ${filename} | cut -d ' ' -f2 | sort | uniq -c | sort -nr -k1 | head -n 3)
 
-# Process top 5 client addresses
-while read -r count address; do
-    getSpecialReqsCount "$address"
+while read client_address; do
+    address=$(echo "${client_address}" | cut -d ' ' -f2)
+    getSpecialReqsCount "${address}"
     echo "$special_count ${address}"
-done < <(cut -d' ' -f1 "$filename" | sort | uniq -c | sort -nr | head -n 5)
+done < <(cat ${filename} | cut -d ' ' -f1 | sort -n | uniq -c | sort -nr -k1 | head -n 5)
