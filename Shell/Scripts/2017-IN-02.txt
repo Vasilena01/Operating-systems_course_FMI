@@ -1,0 +1,56 @@
+#!/bin/bash
+
+#TODO make -ne in bellow if
+if [[ $(id -u) -eq 0 ]]; then
+    echo "Script must be executed as root" 1>&2
+    exit 1
+fi
+
+if [[ ${#} -ne 1 ]]; then
+    echo "Args count must be 1" 1>&2
+    exit 1
+fi
+
+if ! grep -q "^${1}" /etc/passwd; then
+    echo "Invalid user passed" 1>&2
+    exit 1
+fi
+
+function getProcessesCountForUser {
+    local count=$(ps -u ${1} -o pid= | wc -l)
+    echo ${count}
+}
+
+globalUsername=${1}
+globalPsCount=$(getProcessesCountForUser ${globalUsername})
+
+
+while read line; do
+    uid=$(echo ${line} | awk '{print $1}')
+    username=$(echo ${line} | awk '{print $2}')
+
+    count=$(getProcessesCountForUser ${username})
+    if [[ ${count} -gt ${globalPsCount} ]]; then
+        echo ${username}
+    fi
+done < <(ps -e -o uid=,ruser= | sort -n | uniq)
+
+ps_result=$(ps -e -o etimes)
+sum=0
+
+while read time; do
+    sum=$((sum + $time))
+done < <(echo "${ps_result}")
+
+lines_count=$(echo "${ps_result}" | wc -l)
+avg_time=$(echo "${sum} / ${lines_count}" | bc)
+echo "${avg_time}" | awk '{printf "%02d:%02d:%02d\n", $1/3600, ($1%3600)/60, $1%60}'
+
+while read foo_ps; do
+    time=$(echo "${foo_ps}" | awk '{print $1}')
+    pid=$(echo "${foo_ps}" | awk '{print $2}')
+
+    if [[ "${time}"*2 -gt "${avg_time}" ]]; then
+       kill "${pid}"
+    fi
+done < <(ps -u ${globalUsername} -o pid=,etimes=)

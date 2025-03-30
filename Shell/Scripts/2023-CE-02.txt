@@ -1,0 +1,48 @@
+#!/bin/bash
+
+if [[ ${#} -ne 3 ]]; then
+    echo "Expected 3 args"
+    exit 1
+fi
+
+if [[ ! -f ${1} || ! -f ${2} || -z ${3} ]]; then
+    echo "Args 1 and 2 must be valid files, arg 3 must be a string"
+    exit 1
+fi
+
+file1=${1}
+file2=${2}
+blackHoleName=${3}
+
+function getDistance {
+    local filename=${1}
+    line=$(grep -w "${blackHoleName}" "${filename}")
+
+    if [[ ${?} -ne 0 ]]; then
+        echo -1
+        exit 0
+    fi
+
+    dist=$(echo ${line} | sed -E 's/.*: ([0-9]+) megaparsecs.*/\1/')
+    echo $dist
+}
+
+dist1=$(getDistance ${file1})
+dist2=$(getDistance ${file2})
+
+if [[ ${dist1} -eq -1 && ${dist2} -eq -1 ]]; then
+    echo "There was no such blackhole name in either of both files"
+    exit 0
+elif [[ ${dist1} -eq -1 ]]; then
+    echo $(basename ${file2})
+    exit 0
+elif [[ ${dist2} -eq -1 ]]; then
+    echo $(basename ${file1})
+    exit 0
+fi
+
+if [[ ${dist1} -lt ${dist2} ]]; then
+    echo $(basename ${file1})
+else
+    echo $(basename ${file2})
+fi

@@ -1,0 +1,67 @@
+#!/bin/bash
+
+if [[ $(id -u) -eq 0 ]]; then
+    echo "Script must be executed by root" 1>&2
+    exit 1
+fi
+
+if [[ ${#} -ne 1 ]]; then
+    echo "Args count must be equal to 1" 1>&2
+    exit 1
+fi
+
+if [[ ! -f ${1} ]]; then
+    echo "First arg must be a valid filename" 1>&2
+    exit 1
+fi
+
+filename=${1}
+
+function apply_permissions {
+    local file=${1}
+    local mode=${2}
+    local code=${3}
+    local current_mode=$(stat -c '%a' "${file}")
+
+    if [[ "${mode}" == 'R' ]]; then
+        chmod "${code}" "${file}"
+    elif [[ "${mode}" == 'A' ]]; then
+        newcode=$(("${mode}" | "${current_mode}"))
+        chmod "${newcode}" "${file}"
+    elif [[ "${mode}" == 'T' ]]; then
+        newcode=$(("${mode}" | "${current_mode}"))
+
+        if [[ -f "${file}" ]]; then
+            newcode=$(("${newcode}" & ~002))
+        elif [[ -d "${file}" ]]; then
+            newcode=$(("${newcode}" & ~022))
+        fi
+        chmod "${newcode}" "${file}"
+    fi
+}
+
+while read line; do
+    path=$(echo "${line}" | awk '{print $1}')
+    mode=$(echo "${line}" | awk '{print $2}')
+    code=$(echo "${line}" | awk '{print $3}')
+
+    if [[ ! "${mode}" =~ [RAT] ]]; then
+        echo "Unvalid mode provided"
+        continue
+    fi
+
+    if [[ ! "${code}" =~ ^[0-7]{3} ]]; then
+        echo "Unvalid code provided"
+        continue
+    fi
+
+    for file in $(find "${path}" -mindepth 1); do
+       if [[ "${file}" == "${path}" ]]; then
+            continue
+       fi
+
+       if [[ -f "${file}" || -d "${file}" ]]; then
+           apply_permissions "${file}" "${mode}" "${code}"
+       fi
+    done
+done < "${filename}"
