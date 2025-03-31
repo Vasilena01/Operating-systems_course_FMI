@@ -1,0 +1,46 @@
+#!/bin/bash
+
+#TODO make -ne
+if [[ $(id -u) -eq 0 ]]; then
+    echo "Script must be run as root"
+    exit 1
+fi
+
+function getHomeDirPathForUser {
+    line=$(grep "${1}" "/etc/passwd")
+    home=$(echo $line | awk -F ':' '{print $6}')
+    echo $home
+}
+
+function getRssForUser {
+    sum=0
+    while read rss; do
+       sum=$(($sum + $rss))
+    done < <(ps -u ${1} -o rss=)
+    echo $sum
+}
+
+while read uid; do
+    if [[ ${uid} -eq 0 ]]; then
+        continue
+    fi
+
+    homePath=$(getHomeDirPathForUser ${uid})
+
+    if [[ ! -d "${homePath}" ]]; then
+        rss=$(getRssForUser ${uid})
+        rootRssCount=$(getRssForUser 0)
+        if [[ ${rss} -gt ${rootRssCount} ]]; then
+            killall ${uid}
+        fi
+    else
+        if [[ $(stat -c '%u' "${homePath}") -ne ${uid} ||
+            $(stat -c '%a' "${homePath}") =~ ^[0145][0-7][0-7]$ ]]; then
+            rss=$(getRssForUser ${uid})
+            rootRssCount=$(getRssForUser 0)
+            if [[ ${rss} -gt ${rootRssCount} ]]; then
+                killall ${uid}
+            fi
+        fi
+    fi
+done < <(ps -e -o uid= | sort -n | uniq)

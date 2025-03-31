@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#TODO to change -ne
+if [[ $(id -u) -eq 0 ]]; then
+    echo "Script must be executed as root"
+    exit 1
+fi
+
+function getRssSumForUser {
+    sum=0
+    while read rss; do
+        sum=$((${sum} + ${rss}))
+    done < <(ps -u "${1}" -o rss=)
+    echo ${sum}
+}
+
+function getRssCountForUser {
+    echo $(ps -u "${1}" -o pid= | wc -l)
+}
+
+function getMaxRssForUser {
+    line=$(ps -u "${1}" -o pid=,rss= | sort -n -r | head -n 1)
+    idOfMaxRssPs=$(echo "${line}" | awk '{print $1}')
+    maxRssForUser=$(echo "${line}" | awk '{print $2}')
+}
+
+while read uid; do
+    rss_sum=$(getRssSumForUser "${uid}")
+    ps_total_count=$(getRssCountForUser "${uid}")
+
+    avgRssForUser=$(echo ${rss_sum} / ${ps_total_count} | bc)
+    getMaxRssForUser "${uid}"
+
+    if [[ ! -n ${maxRssForUser} || ! -n ${idOfMaxRssPs} ]]; then
+        continue
+    fi
+
+    if [[ ${maxRssForUser} -gt ${avgRssForUser}*2 ]]; then
+        kill ${idOfMaxRssPs}
+    fi
+done < <(ps -e -o uid= | sort -n | uniq)
