@@ -1,0 +1,55 @@
+#!/bin/bash
+
+wordsTmp=$(mktemp)
+filesTmp=$(mktemp)
+
+> "$wordsTmp"
+> "$filesTmp"
+
+# Seperate the args based on their type
+for arg in "${@}"; do
+    if echo "${arg}" | egrep -q '^-R[a-zA-Z0-9]+=[a-zA-Z0-9]+$'; then
+        echo "${arg}" >> ${wordsTmp}
+    elif echo "${arg}" | egrep -q '^[^-].+$'; then
+        echo "${arg}" >> ${filesTmp}
+    else
+        continue
+    fi
+done
+
+# Logic for replacing words in file
+function replaceWordsInFile {
+local targetfile="${1}"
+
+    # Mark non-comment line with |||
+    sed -i 's/^[^#]/|||&/' "${targetfile}"
+
+    # Replace each key with a temp value
+    while read pair; do
+        key=$(echo "${pair}" | awk -F '=' '{print $1}' | sed 's/-R//')
+        value=$(echo "${pair}" | awk -F '=' '{print $2}')
+        sed -i -E "s/^\\|\\|\\|(.*)\\b${key}\\b/|||\1__TEMP_${key}__/g" "${targetfile}"
+    done < "${wordsTmp}"
+    while read pair; do
+        key=$(echo "${pair}" | awk -F '=' '{print $1}' | sed 's/-R//')
+        value=$(echo "${pair}" | awk -F '=' '{print $2}')
+
+        # Replace the temp value based on its key
+        sed -i -E "s/^\\|\\|\\|(.*)\\b__TEMP_${key}__\\b/|||\1${value}/g" "${targetfile}"
+    done < "${wordsTmp}"
+
+    # Remove the ||| at the beginning of each non-comment line
+    sed -i 's/^|||//' "${targetfile}"
+}
+
+# For each file execute the replacing logic
+while read filename; do
+    if [[ ! -f "${filename}" || $(echo "${filename}" | wc -l) -eq 0 ]]; then
+        continue
+    fi
+
+    replaceWordsInFile "${filename}"
+done < "${filesTmp}"
+
+rm "$wordsTmp"
+rm "$filesTmp"
