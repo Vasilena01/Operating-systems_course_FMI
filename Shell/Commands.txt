@@ -348,16 +348,10 @@ shell, можем да я сложим в скрипта ~/.bashrc
 - grep --color - returns the line with highligted matched word
 
 zapiski:
-awk:
-	- $NF - number of fields for curr row
-	- $NR - current row
+- vinagi kogato izvejdame suobshtenie za greshka go prenasochvame kum izhoda za greshki - 1>&2
 Scripts:
 Other:
 
 vuprosi:
-- how to read args from stdin with: while read line; do...done
+- da mi pogledne reshenieto na zad 2023-SE-05 - zashto formatut na faila koito izmislim e vajen...
 - kakva e razlikata mejdu  echo "${line}" | grep 'license' i grep 'license' ${line} v podavaneto na argumenta
-- filename=$(basename "${file}") - moga li da izpolzvam komandata basename
-- da mi pogledne reshenieto na zad 2020-SE-02
-- kakvo pravqt fg i bg
-- kakvo oznachavat zaglaviqta na zadachite i kak da razberem koi sa davani

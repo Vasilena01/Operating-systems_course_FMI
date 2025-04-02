@@ -1,0 +1,53 @@
+#!/bin/bash
+
+if [[ "${#}" -le 1 ]]; then
+    echo "Expected min 2 args"
+    exit 1
+fi
+
+if echo "${1}" | egrep -vq '(^[1-9]+[0-9]*$)|^0$'; then
+    echo "First arg must be a num"
+    exit 1
+fi
+
+if [[ -z "${2}" ]]; then
+    echo "Second arg must be a non-empty string"
+    exit 1
+fi
+
+commandTmp=$(mktemp)
+seconds="${1}"
+shift
+echo "${@}" > "${commandTmp}"
+
+count=0
+total_time=0
+start_time=$(date +%s.%N)
+end_time=$(echo "$start_time + $seconds" | bc)
+
+while (( $(echo "$(date +%s.%N) < $end_time" | bc -l) )); do
+    # Start timing
+    cmd_start=$(date +%s.%N)
+
+    # Execute command
+    bash "${commandTmp}" > /dev/null
+
+    if [[ "${?}" -ne 0 ]]; then
+        echo "Command failed"
+        exit 1
+    fi
+
+    cmd_end=$(date +%s.%N)
+    cmd_duration=$(echo "${cmd_end} - ${cmd_start}" | bc)
+    total_time=$(echo "${total_time} + ${cmd_duration}" | bc)
+    count=$(($count + 1)) 
+done
+
+avg_time=$(echo "scale=9; ${total_time} / ${count}" | bc -l)
+formatted_avg_time=$(printf "%.2f" "${avg_time}")
+formatted_total_time=$(printf "%.2f" "${total_time}")
+
+echo "Ran the command '${@}' ${count} times for ${formatted_total_time} seconds."
+echo "Average runtime: ${formatted_avg_time} seconds."
+
+rm "${commandTmp}"

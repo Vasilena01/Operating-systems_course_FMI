@@ -109,5 +109,3 @@ $(cat spacex.txt | awk -F '|' '{if($3 == "Failure") print $2}'
 | sort | uniq -c | sort -nr | head -n 1 | awk '{print $2}') '{if($2==var)print $3 ":" $4}' | head -n1
 
 2023-CE-03 - find -type f -regex '.*/[a-zA-Z0-9_]+_[0-9]+\.log' | xargs grep -o -w "error" | wc -l 
-
-

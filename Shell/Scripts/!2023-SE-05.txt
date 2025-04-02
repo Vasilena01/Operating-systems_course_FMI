@@ -1,0 +1,63 @@
+#!/bin/bash
+
+totalRssForCommand=$(mktemp)
+commOverTheLimit=$(mktemp)
+
+> "${totalRssForCommand}"
+> "${commOverTheLimit}"
+
+peekCount=0
+interval=1
+limit=65536
+
+while true; do
+    overTheLimitCount=0
+
+    while read ps; do
+        rss=$(echo "${ps}" | awk '{print $1}')
+        comm=$(echo "${ps}" | awk '{print $2}')
+        line=$(egrep "^${comm} " "${totalRssForCommand}")
+
+        # Check if the comm has been already seen before
+        if [[ ! -z "${line}" ]]; then
+            currRss=$(echo "${line}" | awk '{print $2}')
+            newRss=$(($currRss + $rss))
+            sed -i -E "s|^${comm} ${currRss}|${comm} ${newRss}|" "${totalRssForCommand}"
+
+            # If the newRss of the comm is -gt limit
+            if [[ "${newRss}" -gt "${limit}" ]]; then
+                overTheLimitCount=$(($overTheLimitCount + 1))
+                line2=$(egrep "^${comm} " "${commOverTheLimit}")
+
+                # Check if the comm had already exeeded the limit
+                if [[ ! -z "${line2}" ]]; then
+                    count=$(echo "${line2}" | awk '{print $2}')
+                    newCount=$(($count + 1))
+                    sed -i -E "s|^${comm} ${count}|${comm} ${newCount}|" "${commOverTheLimit}"
+                else
+                    echo "${comm} 1" >> "${commOverTheLimit}"
+                fi
+            fi
+        else
+            echo "${comm} ${rss}" >> "${totalRssForCommand}"
+        fi
+    done < <(ps -e -o rss=,comm=)
+
+    if [[ "${overTheLimitCount}" -eq 0 ]]; then
+        break
+    fi
+
+    peekCount=$(($peekCount + 1))
+    sleep "${interval}"
+done
+
+while read line; do
+    comm=$(echo "${line}" | awk '{print $1}')
+    count=$(echo "${line}" | awk '{print $2}')
+
+    if (( ${count} * 2 >  ${peekCount})); then
+        echo "${comm}"
+    fi
+done < "${commOverTheLimit}"
+
+rm "${totalRssForCommand}" "${commOverTheLimit}"
