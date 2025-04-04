@@ -1,0 +1,66 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 1 ]]; then
+    echo "Expected 1 arg"
+    exit 1
+fi
+
+if [[ ! -d "${1}" ]]; then
+    echo "Arg must be a valid directory"
+    exit 1
+fi
+
+dir="${1}"
+sha_keys_file="./sha256keys.log"
+extracted_files="./extracted"
+files_list=$(mktemp)
+
+# Save new/not already added archive files and their hash to sha256keys.log file
+while read file; do
+    sha_pair=$(sha256sum ${file})
+    sha_key=$(echo "${sha_pair}" | awk '{print $1}')
+
+    if ! cat "${sha_keys_file}" | grep -q "${file}"; then
+        echo "${sha_pair}" >> "${sha_keys_file}"
+        echo "${file}" >> "${files_list}"
+    else
+        if ! cat "${sha_keys_file}" | grep -q "${sha_key}"; then
+           old_sha=$(cat "${sha_keys_file}" | grep "${file}" | cut -d ' ' -f1)
+           sed -i "s/${old_sha}/${sha_key}/" "${sha_keys_file}"
+          echo "${file}" >> "${files_list}"
+        fi
+    fi
+done < <(find "${dir}" -type f | egrep '\.tgz$')
+
+function moveMeowFiles {
+    local extracted_file_data="${1}"
+    local archive_name="${2}"
+
+    while read file; do
+        if echo "${file}" | grep -q 'meow.txt'; then
+            filename=$(basename "${archive_name}")
+            name=$(echo "${filename}" | egrep -o '^[^_]*')
+            timestamp=$(echo "${filename}" | egrep -o '\-[0-9]+\.' | tr -d '-' | tr -d '.')
+            cp "${file}" "${extracted_files}/${name}_${timestamp}.txt"
+        fi
+    done < "${extracted_file_data}"
+}
+
+while read file; do
+    if ! tar -xaf "$file" 2>/dev/null; then
+        continue
+    fi
+
+    extracted_file_data=$(mktemp)
+    temp_dir=$(mktemp -d)
+
+    tar -xaf "${file}" -C "${temp_dir}"
+    find ${temp_dir} -type f >> "${extracted_file_data}"
+
+    moveMeowFiles ${extracted_file_data} ${file}
+
+    rm "${extracted_file_data}"
+    rm -r "${temp_dir}"
+done < ${files_list}
+
+rm "${files_list}"

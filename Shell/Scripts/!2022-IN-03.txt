@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if [[ "${#}" -eq 0 ]]; then
+    echo "Args count must be not zero"
+    exit 1
+fi
+
+javaArgs=$(mktemp)
+mainArgs=$(mktemp)
+
+# Extract the jar file from the args
+args_string=$(printf '%s\n' "${@}" | tr '\n' ' ')
+jarFile=$(echo "${args_string}" | grep -Eo -- '-jar[[:space:]]+[^[:space:]]+\.jar' | head -1 | awk '{print $2}')
+
+if [[ -z "${jarFile}" ]]; then
+    echo "The command does not contain a jar file to be executed"
+    exit 1
+fi
+
+# Get mainArgs and javaArgs - which start with -/'', except for the -jar arg and .jar file
+for arg in "${@}"; do
+    if [[ "${arg}" == "-jar" || "${arg}" == "${jarFile}" ]]; then
+         continue
+    fi
+
+    if [[ "${arg}" != -* ]]; then
+        echo "$arg" >> "${mainArgs}"
+    else
+        echo "$arg" >> "${javaArgs}"
+    fi
+done
+
+java_opts=$(paste -sd ' ' "${javaArgs}")
+main_args=$(paste -sd ' ' "${mainArgs}")
+
+java_cmd="java ${java_opts} -jar ${jarFile} ${main_args}"
+eval "${java_cmd}"
+rm "${javaArgs}" "${mainArgs}"

@@ -1,0 +1,44 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 1 ]]; then
+    echo "Args count must be two"
+    exit 1
+fi
+
+if [[ ! -f "${1}" ]]; then
+    echo "First arg must be a valid file"
+    exit 1
+fi
+
+fileToEdit="./example-wakeup"
+fileConfig="${1}"
+
+function changeDeviceInMainFile {
+    local device="${1}"
+    local mode="${2}"
+    if ! cat "${fileToEdit}" | grep -q "${device}"; then
+        echo "There is no such device: ${device} in the file"
+        return 1
+    else
+        curr_line=$(cat "${fileToEdit}" | grep "${device}")
+    fi
+
+    sed -i -E "s/([[:space:]]+${device}[[:space:]]+[^[:space:]]+[[:space:]]+)\*(enabled|disabled)/\1\*${mode}/" "${fileToEdit}"
+}
+
+while read line; do
+    # Skip full commented lines
+    if echo "${line}" | egrep -q '^#'; then
+        continue
+    fi
+
+    # Get only uncommented parts of lines
+    if echo "${line}" | egrep -q '#'; then
+        line=$(echo "${line}" | egrep -o '^[A-Z]+[[:space:]]*[a-z]+[[:space:]]*')
+    fi
+
+    device=$(echo "${line}" | awk '{print $1}')
+    mode=$(echo "${line}" | awk '{print $2}')
+
+    changeDeviceInMainFile "${device}" "${mode}"
+done < "${fileConfig}"

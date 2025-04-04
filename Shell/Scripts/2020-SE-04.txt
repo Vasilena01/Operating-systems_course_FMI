@@ -1,0 +1,54 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 2 ]]; then
+    echo "Args count must be 2"
+    exit 1
+fi
+
+if [[ ! -d "${1}" ]]; then
+    echo "First arg must be a valid dir"
+    exit 1
+fi
+
+src=${1}
+dst=${2}
+#TODO uncomment, just for test cases its commented, because these dirs already exist
+#mkdir "${dst}" 2>/dev/null
+#mkdir "${dst}/images" 2>/dev/null
+#mkdir "${dst}/by-title" 2>/dev/null
+
+function getTitle {
+    local filename=${1}
+    name=$(echo "${filename}" | sed -E "s/${src}\///" | sed -E 's/\([^)]*\)//g; s/\.jpg$//' | tr -d ' ')
+    echo "${name}"
+}
+
+function getAlbum {
+    local filename=${1}
+    album=$(echo "${filename}" | egrep -o '\([^)]*\)[^()]*$' | sed -E 's/(\(.*\)).*/\1/' | tr -d '(' | tr -d ')')
+    if [[ -z "${album}" ]]; then
+        echo 'misc'
+        exit 0
+    fi
+    echo "${album}"
+}
+
+while read file; do
+    title=$(getTitle "${file}")
+    album=$(getAlbum "${file}")
+    date=$(stat -c %y "${file}" | awk '{print $1}')
+    sha_key=$(sha256sum "${file}" | awk '{print $1}' | head -c 16)
+
+    mkdir -p "${dst}/by-date/${date}/by-album/${album}/by-title" 2>/dev/null
+    mkdir -p "${dst}/by-date/${date}/by-title" 2>/dev/null
+
+    mkdir -p "${dst}/by-album/${album}/by-date/${date}/by-title" 2>/dev/null
+    mkdir -p "${dst}/by-album/${album}/by-title" 2>/dev/null
+
+    cp "${file}" "${dst}/images/${sha_key}.jpg"
+    ln -s "${sha_key}.jpg" "${dst}/by-date/${date}/by-album/${album}/by-title/${title}.jpg" 2>/dev/null
+    ln -s "${sha_key}.jpg" "${dst}/by-date/${date}/by-title/${title}.jpg" 2>/dev/null
+    ln -s "${sha_key}.jpg" "${dst}/by-album/${album}/by-date/${date}/by-title/${title}.jpg" 2>/dev/null
+    ln -s "${sha_key}.jpg" "${dst}/by-album/${album}/by-title/${title}.jpg" 2>/dev/null
+    ln -s "${sha_key}.jpg" "${dst}/by-title/${title}.jpg" 2>/dev/null
+done < <(find "${src}" | egrep '\.jpg$')
