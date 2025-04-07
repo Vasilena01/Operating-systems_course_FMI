@@ -1,0 +1,37 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 2 ]]; then
+    echo "Expected 2 args"
+    exit 1
+fi
+
+if [[ -z "${1}" ]]; then
+    echo "First arg must be a non-empty string"
+    exit 1
+fi
+
+if [[ ! -f "${2}" ]]; then
+    echo "Second arg must be a valid filename"
+    exit 1
+fi
+
+domain="${1}"
+map_file="${2}"
+
+while read team_name; do
+    curr_team_info=$(mktemp)
+    curr_team_servers=$(mktemp)
+    curr_team_zones=$(mktemp)
+    grep "${team_name}$" "${map_file}" > "${curr_team_info}"
+    awk '{print $1}' "${curr_team_info}"> "${curr_team_servers}"
+    awk '{print $2}' "${curr_team_info}"> "${curr_team_zones}"
+    echo "; team ${team_name}"
+
+    while read zone; do
+        while read server; do
+            echo "${zone}  IN  NS  ${server}.${domain}."
+        done < "${curr_team_servers}"
+    done < "${curr_team_zones}"
+
+    rm "${curr_team_info}" "${curr_team_servers}" "${curr_team_zones}"
+done < <(cat "${map_file}" | awk '{print $3}' | sort | uniq)

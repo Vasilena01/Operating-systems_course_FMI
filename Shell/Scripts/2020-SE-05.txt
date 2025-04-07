@@ -1,0 +1,79 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 3 ]]; then
+    echo "Args count must be 3"
+    exit 1
+fi
+
+if [[ ! -f "${1}" && ! -f "${2}" ]]; then
+    echo "First/Second arg must be a valid file"
+    exit 1
+fi
+
+if [[ ! -d "${3}" ]]; then
+    echo "Third arg must be a valid dirname"
+    exit 1
+fi
+
+if [[ ! -f "${1}" ]]; then
+    touch "${1}"
+    pwd_file="${2}"
+    res_file="${1}"
+elif [[ ! -f "${2}" ]]; then
+    touch "${2}"
+    pwd_file="${1}"
+    res_file="${2}"
+else
+    pwd_file="${1}"
+    res_file="${2}"
+fi
+
+dir="${3}"
+echo > $res_file
+
+function validateFile {
+    local filename="${1}"
+    false_lines_tmp=$(mktemp)
+    count_false=0
+
+    while read line; do
+        count_false=$(($count_false + 1))
+        if echo "${line}" | egrep -q '^#'; then
+            continue
+        fi
+
+        if [[ -z "${line}" ]]; then
+            continue
+        fi
+
+        if echo "${line}" | egrep -q -v '^\{[^\}]*\};$'; then
+            echo "${count_false}:${line}" >> "${false_lines_tmp}"
+        fi
+    done < "${filename}"
+}
+
+function combineLinesOfValidFiles {
+    local filename="${1}"
+    while read line; do
+        echo "${line}" >> "${res_file}"
+    done < "${filename}"
+}
+
+while read file; do
+    validateFile "${file}"
+    if [[ -s "${false_lines_tmp}" ]]; then
+        echo "Error in $(basename "${file}"):"
+        while read line; do
+            echo "Line ${line}"
+        done < "${false_lines_tmp}"
+    else
+        combineLinesOfValidFiles "${file}"
+        name=$(basename "${file}" | sed -E 's/.cfg//')
+        if ! cat "${pwd_file}" | egrep -q "^${name}"; then
+            new_pass=$(pwgen 16 1)
+            echo "${name}:${new_pass}" >> "${pwd_file}"
+            echo "New added user: ${name} with pass: ${new_pass}"
+        fi
+    fi
+    rm "${false_lines_tmp}"
+done < <(find "${dir}" -type f | egrep '\.cfg$')
