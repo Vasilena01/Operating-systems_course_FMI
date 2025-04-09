@@ -1,0 +1,49 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 2 ]]; then
+    echo "Args count must be 2"
+    exit 1
+fi
+
+if [[ ! -d "${1}" ]]; then
+    echo "First arg must be a valid dirname"
+    exit 1
+fi
+
+if [[ ! -f "${2}" ]]; then
+    echo "Second arg must be a valid filename"
+    exit 1
+fi
+
+graph="${2}"
+
+function saveParentsToFile {
+    local parents="${1}"
+    local child="${2}"
+
+    while read line; do
+        parent=$(echo "${line}" | awk '{print $2}')
+        if ! cat "${graph}" | egrep -q "^${parent}$"; then
+            echo "${parent}" >> "${graph}"
+        fi
+        if ! cat "${graph}" | egrep -q "^${parent} -> ${child}"; then
+            echo "${parent} -> ${child}" >> "${graph}"
+        fi
+    done < "${parents}"
+}
+
+while read file; do
+    first_line=$(cat "${file}" | head -n 1)
+    child_class=$(echo "${first_line}" | awk '{print $2}')
+    if ! cat "${graph}" | egrep -q "^${child_class}$"; then
+        echo "${child_class}" >> "${graph}"
+    fi
+
+    all_parents=$(mktemp)
+    echo "${first_line}" | awk -F ':' '{print $2}' | tr ',' '\n' > "${all_parents}"
+
+    if [[ $(cat "${all_parents}" | wc -l) -ge 1 && ! -z $(cat "${all_parents}" | head -n 1) ]]; then
+        saveParentsToFile "${all_parents}" "${child_class}"
+    fi
+    rm "${all_parents}"
+done < <(find "${1}" -type f -name "*.h")
