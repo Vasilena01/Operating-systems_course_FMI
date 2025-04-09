@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if [[ -n $PASSWD ]]; then
+    passwd_file=$PASSWD
+else
+    passwd_file="/etc/passwd"
+fi
+
+user_list_tmp=$(mktemp)
+echo $(./occ user:list) > "${user_list_tmp}"
+
+while read line; do
+    uid=$(echo "${line}" | awk -F ':' '{print $3}')
+    if [[ $uid -lt 1000 ]]; then
+        continue
+    fi
+    username=$(echo "${line}" | awk -F ':' '{print $1}')
+    if ! grep -q "^${username}: " "${user_list_tmp}"; then
+        ./occ user:add "${username}"
+    else
+        user_info_tmp=$(mktemp)
+        echo $(./occ user:info "${username}") > "${user_info_tmp}"
+        status=$(grep '^enabled' "${user_info_tmp}" | awk -F ':' '{print $2}' | tr -d ' ')
+        if [[ "${status}" == "false" ]]; then
+            ./occ user:enable "${username}"
+        fi
+        rm "${user_info_tmp}"
+    fi
+done < "${passwd_file}"
+
+while read line; do
+    username=$(echo "${line}" | awk -F ':' '{print $1}')
+    if ! grep -q "^${username}:" "${passwd_file}"; then
+        ./occ user:disable "${username}"
+    fi
+done < "${user_list_tmp}"
+
+rm "${user_list_tmp}"

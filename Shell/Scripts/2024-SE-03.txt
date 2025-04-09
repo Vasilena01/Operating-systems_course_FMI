@@ -1,0 +1,63 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 1 ]]; then
+    echo "Expected 1 arg"
+    exit 1
+fi
+
+if echo "${1}" | egrep -qv '^([1-9][0-9]*|0)$'; then
+    echo "Arg must be a valid num"
+    exit 1
+fi
+
+N="${1}"
+
+letters_tmp=$(mktemp)
+input_tmp=$(mktemp)
+achords_tmp=$(mktemp)
+achords_tmp_uniq=$(mktemp)
+read -r user_input
+echo "${user_input}" >> "${input_tmp}"
+
+# Create note sequence with IDs (0-13)
+{
+echo "0 A"
+echo "1 Bb"
+echo "2 B"
+echo "3 C"
+echo "4 Db"
+echo "5 D"
+echo "6 Eb"
+echo "7 E"
+echo "8 F"
+echo "9 Gb"
+echo "10 G"
+echo "11 Ab"
+echo "12 A"
+} > "${letters_tmp}"
+
+# Get the achords
+for word in $(cat "${input_tmp}"); do
+    if echo "${word}" | egrep -q '^\[[A-G][a-z]*[0-9]*\]'; then
+        achord=$(echo "${word}" | egrep -o '^\[[A-G][a-z]*[0-9]*\]')
+        echo "${achord}" >> "${achords_tmp}"
+    fi
+done
+
+cat $achords_tmp | sort | uniq >> "${achords_tmp_uniq}"
+
+key=$(pwgen)
+while read word; do
+    to_change=$(echo "${word}" | head -c 3 | tr -d '[]' | egrep -o '([A-G])|([A-G]b)')
+    curr_index=$(cat "${letters_tmp}" | egrep "\b${to_change}\b" | awk '{print $1}' | head -n 1)
+
+    sum=$(( $curr_index + $N ))
+    new_index=$(( $sum % 12 ))
+    new_chord=$(awk -v id="$new_index" '$1 == id {print $2}' "${letters_tmp}")
+
+    sed -i -E "s/\[${to_change}([a-z0-9]*)/[${key}${new_chord}\1/g" "${input_tmp}"
+done < "${achords_tmp_uniq}"
+
+sed -i -E "s/${key}([A-G]|[A-G]b)/\1/g" "${input_tmp}"
+cat "$input_tmp"
+rm "${input_tmp}" "${achords_tmp}" "${achords_tmp_uniq}"

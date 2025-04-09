@@ -1,0 +1,33 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 1 ]]; then
+    echo "Expected 1 arg"
+    exit 1
+fi
+
+file_to_create="${1}"
+instructions="./bakefile"
+
+function createFile {
+    local to_create="${1}"
+
+    if ! cat "${instructions}" | grep -q "${to_create}"; then
+        if [[ ! -f "${to_create}" ]]; then
+            echo "File to create doesn't exist"
+            exit 1
+        fi
+    else
+        relations=$(mktemp)
+        line=$(cat "${instructions}" | egrep "^${to_create}:")
+        comm=$(echo "${line}" | awk -F ':' '{print $3}')
+        echo "${line}" | awk -F ':' '{print $2}' | tr ' ' '\n' >> "${relations}"
+
+        while read relation; do
+            createFile "${relation}"
+        done < "${relations}"
+        $("${comm}")
+        rm "${relations}"
+    fi
+}
+
+createFile "${file_to_create}"
