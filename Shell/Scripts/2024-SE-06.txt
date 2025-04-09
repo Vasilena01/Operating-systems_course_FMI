@@ -1,0 +1,151 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 1 ]]; then
+    echo "Expected 1 arg"
+    exit 1
+fi
+
+if [[ ! -f "${1}" ]]; then
+    echo "First arg must be a valid filename"
+    exit 1
+fi
+
+instructions="${1}"
+uniq_instructions=$(mktemp)
+
+function validateFile {
+    local instruction="${1}"
+    file=$(echo "${instruction}" | awk '{print $1}')
+    dirname=$(dirname "${file}")
+    mask=$(echo "${instruction}" | awk '{print $NF}')
+    ownership=$(echo "${instruction}" | egrep -o '[a-zA-Z0-9]+:[a-zA-Z0-9]+')
+
+    if [[ -z "${ownership}" ]]; then
+        ownership='none'
+    fi
+
+    # If the file doesn't exist
+    find "${file}"
+    if [[ "${?}" -ne 0 ]]; then
+        mkdir -p "${dirname}"
+        touch "${file}"
+        chmod "${mask}" "${dirname}" "${file}"
+        return
+    fi
+
+    curr_type=$(stat -c %F "${file}")
+    if ! echo "${curr_type}" | grep -q 'file'; then
+        rm "${file}"
+        touch "${file}"
+        chmod "${mask}" "${file}"
+    else
+        curr_mask=$(stat -c %a "${file}")
+        if [[ "${curr_mask}" -ne "${mask}" ]]; then
+            chmod "${mask}" "${file}"
+        fi
+    fi
+
+    if [[ "${ownership}" != "none" ]]; then
+        chown "${ownership}" "${file}"
+    fi
+}
+
+function validateDir {
+    local instruction="${1}"
+    file=$(echo "${instruction}" | awk '{print $1}')
+    mask=$(echo "${instruction}" | awk '{print $NF}')
+    ownership=$(echo "${instruction}" | egrep -o '[a-zA-Z0-9]+:[a-zA-Z0-9]+')
+
+    if [[ -z "${ownership}" ]]; then
+        ownership='none'
+    fi
+
+    # If the file doesn't exist
+    find "${file}"
+    if [[ "${?}" -ne 0 ]]; then
+        mkdir -p "${file}"
+        chmod "${mask}" "${file}"
+        return
+    fi
+
+    curr_type=$(stat -c %F "${file}")
+    if ! echo "${curr_type}" | grep -q 'directory'; then
+        rm -r "${file}"
+        mkdir -p "${file}"
+        chmod "${mask}" "${file}"
+    else
+        curr_mask=$(stat -c %a "${file}")
+        if [[ "${curr_mask}" -ne "${mask}" ]]; then
+            chmod "${mask}" "${file}"
+        fi
+    fi
+
+    if [[ "${ownership}" != "none" ]]; then
+        chown "${ownership}" "${file}"
+    fi
+}
+
+function validateLink {
+    local instruction="${1}"
+    symLink=$(echo "${instruction}" | awk '{print $1}')
+    target=$(echo "${instruction}" | awk '{print $NF}')
+
+    # If the file doesn't exist
+    find "${file}"
+    if [[ "${?}" -ne 0 ]]; then
+        ln -s "${file}"
+        chmod "${mask}" "${file}"
+        return
+    fi
+
+    curr_type=$(stat -c %F "${file}")
+    if ! echo "${curr_type}" | grep -q 'symbolic link'; then
+        rm "${file}"
+        ln -s "${file}"
+        chmod "${mask}" "${file}"
+    else
+        curr_mask=$(stat -c %a "${file}")
+        if [[ "${curr_mask}" -ne "${mask}" ]]; then
+            chmod "${mask}" "${file}"
+        fi
+    fi
+
+    if [[ "${ownership}" != "none" ]]; then
+        chown "${ownership}" "${file}"
+    fi
+}
+
+# Remove repeating instructions from list, by saving the last from them
+while read line; do
+    file=$(echo "${line}" | awk '{print $1}')
+    if cat "${uniq_instructions}" | egrep -q "\b${file}\b"; then
+       continue
+    fi
+    if [[ $(cat "${instructions}" | egrep "\b${file}\b" | wc -l) -gt 1 ]]; then
+        line=$(cat "${instructions}" | egrep "\b${file}\b" | tail -n 1)
+    fi
+    echo "${line}" >> "${uniq_instructions}"
+done < "${instructions}"
+
+# Read unique instructions
+while read line; do
+    type=$(echo "${line}" | awk '{print $2}')
+
+    if [[ "${type}" == "file" ]]; then
+       validateFile "${line}"
+    elif [[ "${type}" == "dir" ]]; then
+       validateDir "${line}"
+    elif [[ "${type}" == "symlink" ]]; then
+       validateLink "${line}"
+    elif [[ "${type}" == "nonexistant" ]]; then
+        file=$(echo "${line}" | awk '{print $1}')
+        find "${file}"
+        if [[ "${?}" -ne 0 ]]; then
+           continue
+        else
+            rm "${file}"
+        fi
+    fi
+done < "${uniq_instructions}"
+
+rm "${uniq_instructions}"

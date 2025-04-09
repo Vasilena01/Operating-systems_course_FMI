@@ -1,0 +1,51 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 1 ]]; then
+    echo "Args count must be 1"
+    exit 1
+fi
+
+if [[ ! -d "${1}" ]]; then
+    echo "First arg must be a valid dir"
+    exit 1
+fi
+
+dir="${1}"
+all_files_data=$(mktemp)
+candidates_tmp=$(mktemp)
+
+function saveUniqWordsToFile {
+    local file="${1}"
+    local count="${2}"
+
+    cat "${file}" | tr ' ' '\n' |  grep -E -o '[a-z][a-z]+' | tr -d '.:,' | sort | uniq -c | tr -s ' ' \
+        | sed -E "s/^[[:space:]]*([0-9]+)[[:space:]]+([a-z]*)/${count} \1 \2/" \
+        >> "${all_files_data}"
+}
+
+count=0
+# Save all words from each file in the all_files_data tmp
+while read file; do
+    count=$(($count + 1))
+    saveUniqWordsToFile "${file}" "${count}"
+done < <(find "${dir}" -type f)
+
+# Get most occured words for all files
+while read line; do
+    curr_lines=$(mktemp)
+    curr_word=$(echo "${line}" | awk '{print $3}')
+    cat "${all_files_data}" | egrep "\b${curr_word}\b" >> "${curr_lines}"
+    count_of_files=$(cat $curr_lines | wc -l)
+
+    if [[ ! "${count_of_files}" -ge 3 || ! "${count_of_files}" -ge ${count}/2 ]]; then
+        rm "${curr_lines}"
+        continue
+    fi
+
+    total_occur=$(cat "${curr_lines}" | awk 'BEGIN {count=0} {count+=$2} END {print count}')
+    echo "${curr_word} ${total_occur}" >> "${candidates_tmp}"
+    rm "${curr_lines}"
+done < "${all_files_data}"
+
+cat ${candidates_tmp} | sort -n -k2 -r | uniq | head -n 10 | awk '{print $1}'
+rm "${all_files_data}" "${candidates_tmp}"

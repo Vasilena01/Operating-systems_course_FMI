@@ -1,0 +1,32 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 2 ]]; then
+    echo "Args count must be 2"
+    exit 1
+fi
+
+if [[ ! -f "${1}" ]]; then
+    echo "First arg must be a valid filename"
+    exit 1
+fi
+
+if [[ ! -d "${2}" ]]; then
+    echo "First arg must be a valid dirname"
+    exit 1
+fi
+
+forbidden_words="${1}"
+dir="${2}"
+
+function replaceForbiddenWordsInFile {
+    local filename="${1}"
+    while read word; do
+      censor=$(echo "${word}" | tr '[A-Za-z_]' '*')
+      sed -iE "s/\b${word}\b/${censor}/g" "${filename}"
+    done < "${forbidden_words}"
+}
+
+while read file; do
+    replaceForbiddenWordsInFile "${file}"
+    cat $file
+done < <(find "${dir}" -type f -name "*.txt")

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 1 ]]; then
+    echo "Expected 1 arg"
+    exit 1
+fi
+
+if [[ ! -d "${1}" ]]; then
+    echo "Arg must be a valid dir"
+    exit 1
+fi
+
+dir="${1}"
+all_files_hashSum=$(mktemp)
+total_space_saved=0
+
+while read file; do
+    hash_sum=$(sha256sum "${file}")
+    echo "${hash_sum}" >> "${all_files_hashSum}"
+done < <(find "${dir}" -type f)
+
+countGroupsOfDuplicates=0
+while read hashSum; do
+   files_with_same_hash=$(mktemp)
+   cat "${all_files_hashSum}" | egrep "${hashSum}" | awk '{print $2}' >> "${files_with_same_hash}"
+   filesCount=$(cat "${files_with_same_hash}" | wc -l)
+   first_file=$(cat "${files_with_same_hash}" | head -n 1)
+   space=$(stat -c %s "${first_file}")
+
+   while read file; do
+       ln -f "${first_file}" "${file}"
+   done < <(cat "${files_with_same_hash}" | tail -n +2)
+
+   total_space_saved=$(($total_space_saved + $space*($filesCount - 1)))
+   countGroupsOfDuplicates=$(($countGroupsOfDuplicates + 1))
+   rm "${files_with_same_hash}"
+done < <(cat "${all_files_hashSum}" | awk '{print $1}' | sort | uniq)
+
+echo "Deduplicated $countGroupsOfDuplicates groups of files"
+echo "Saved $total_space_saved bytes"
+rm "${all_files_hashSum}"
