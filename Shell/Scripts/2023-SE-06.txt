@@ -1,0 +1,70 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 2 ]]; then
+    echo "Expected 2 args"
+    exit 1
+fi
+
+if [[ ! -d "${1}" ]]; then
+    echo "First arg must be a valid dirname"
+    exit 1
+fi
+
+camera="${1}"
+album="${2}"
+photosInfo=$(mktemp)
+
+if [[ ! -d "${album}" ]]; then
+    mkdir "${album}"
+fi
+
+function combineAllCurrFilesToOneDir {
+    first_date=$(cat "${photosInfo}" | head -n 1 | awk '{print $2}')
+    last_date=$(cat "${photosInfo}" | tail -n 1 | awk '{print $2}')
+    dir_name="${first_date}_${last_date}"
+
+    if [[ ! -d "${album}/${dir_name}" ]]; then
+        mkdir "${album}/${dir_name}"
+    fi
+
+    while read file; do
+       file_name=$(echo "${file}" | awk '{print $1}')
+       file_date=$(echo "${file}" | awk '{print $2}')
+       file_time=$(echo "${file}" | awk '{print $3}')
+       new_name="${file_date}_${file_time}.jpg"
+       mv "${file_name}" "${album}/${dir_name}/${new_name}"
+    done < "${photosInfo}"
+
+    echo > "${photosInfo}"
+}
+
+function addToPhotosInfo {
+    local file="${1}"
+    curr_file=$(echo "${file}" | awk '{print $1}')
+    curr_date=$(echo "${file}" | awk '{print $2}' | awk -F '+' '{print $1}')
+    curr_time=$(echo "${file}" | awk '{print $2}' | awk -F '+' '{print $2}' | awk -F '.' '{print $1}')
+
+    if [[ ! -s "${photosInfo}" ]]; then
+        echo "${curr_file} ${curr_date} ${curr_time}" > "${photosInfo}"
+        return
+    fi
+
+    last_saved_date=$(cat "${photosInfo}" | tail -n 1 | awk '{print $2}')
+    next_date=$(date -d "$last_saved_date +1 day" +'%Y-%m-%d')
+
+    if [[ "${curr_date}" == "${next_date}" || "${curr_date}" == "${last_saved_date}" ]]; then
+        echo "${curr_file} ${curr_date} ${curr_time}" >> "${photosInfo}"
+    else
+        combineAllCurrFilesToOneDir
+    fi
+}
+
+while read file_info; do
+    addToPhotosInfo "${file_info}"
+done < <(find "${camera}" -type f -name "*.jpg" -printf "%p %T+ \n" | sort -t " " -k2 -n)
+
+if [[ -s "${photosInfo}" ]]; then
+    combineAllCurrFilesToOneDir
+fi
+
+rm "${photosInfo}"
