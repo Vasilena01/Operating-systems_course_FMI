@@ -1,0 +1,48 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 1 ]]; then
+    echo "Expected 1 arg"
+    exit 1
+fi
+
+if [[ ! -d "${1}" ]]; then
+    echo "Arg should be a valid dir"
+    exit 1
+fi
+
+dir="${1}"
+echo > "${dir}/foo.conf"
+broken_files_lines=$(mktemp)
+
+while read file; do
+    # Execute the custom script for each file
+    "${dir}/validate.sh" "${file}" >/dev/null
+    comm_status=${?}
+
+    filename=$(basename "${file}" | awk -F '.' '{print $1}')
+    res_tmp=$(mktemp)
+    echo $("${dir}/validate.sh" "${file}") >> $res_tmp
+
+    if [[ "${comm_status}" -eq 0 ]]; then
+        # Save the valid data to foo.conf
+        while read line; do
+            echo "${line}" >> "${dir}/foo.conf"
+        done < "${file}"
+
+        # Create user in foo.pwd if doent exist
+        if ! cat "${dir}/foo.pwd" | egrep -q "^${filename}:"; then
+            passwd=$(pwgen)
+            passwd_hash=$(mkpasswd ${passwd})
+            echo "$filename:$passwd_hash" >> "${dir}/foo.pwd"
+        fi
+    elif [[ "${comm_status}" -eq 1 ]]; then
+        # Add lines of broken file to tmp
+        while read line; do
+            echo "${filename}: ${line}" >> "${broken_files_lines}"
+        done < "${res_tmp}"
+    fi
+    rm "${res_tmp}"
+done < <(find "${dir}/cfg" -type f -name "*\.cfg")
+
+cat $broken_files_lines >&2
+rm "${broken_files_lines}"

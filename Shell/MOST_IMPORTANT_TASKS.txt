@@ -13,3 +13,11 @@ NE resheni:
 
 Vajni, no lesni:
 2016-SE-01
+
+2025-IN-01
+2022-SE-02
+2022-IN-04
+
+otnovo:
+2022-IN-03
+2023-IN-02

@@ -1,0 +1,56 @@
+#!/bin/bash
+
+if [[ "${#}" -ne 2 ]]; then
+    echo "Expected 2 args"
+    exit 1
+fi
+
+if [[ ! -d "${1}" ]]; then
+    echo "First arg must be a valid dir"
+    exit 1
+fi
+
+if ! echo "${2}" | egrep -q '^([1-9]{1,2}|0)$'; then
+    echo "Second arg must be a valid num between 1-99"
+    exit 1
+fi
+
+dir=${1}
+maxP=${2}
+
+start_usage=$(df "${dir}" | tail -n 1 | awk '{print $5}' |  tr -d '%')
+
+if [[ $start_usage -le $maxP ]]; then
+    echo "No need to resize"
+    exit 0
+fi
+
+function modify {
+    local dirname="${1}"
+    local min_occur=$(( "${2}" + 1 ))
+
+    while read line; do
+        file=$( echo "${line}" | awk '{print $1}')
+        filename=$(basename "${file}" | awk -F '-' '{print $1"-"$2}')
+        count_of_occur=$(find "${dirname}" -type f | grep "${filename}" | wc -l)
+
+        if [[ "${count_of_occur}" -gt "${min_occur}" ]]; then
+            rm "${file}"
+        fi
+
+        current_usage=$(df "${dir}" | tail -n 1 | awk '{print $5}' |  tr -d '%')
+        if [[ $current_usage -le $maxP ]]; then
+            break
+        fi
+    done < <(find "${dirname}" -type f -name "*\.tar\.xz" -printf '%p %s %A@ \n' | sort -t ' ' -n -k2nr -k3n)
+}
+
+for i in $(seq 0 3); do
+    modify "${dir}/${i}" ${i}
+done
+
+while read line; do
+    if [[ ! -e "${line}" ]]; then
+        rm "${line}"
+    fi
+done < <(find "${dir}" -type l)
