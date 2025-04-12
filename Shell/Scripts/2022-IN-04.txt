@@ -11,29 +11,25 @@ if [[ ! -d "${1}" ]]; then
 fi
 
 dir="${1}"
-echo > "${dir}/foo.conf"
 broken_files_lines=$(mktemp)
+foo_tmp=$(mktemp)
 
 while read file; do
     # Execute the custom script for each file
-    "${dir}/validate.sh" "${file}" >/dev/null
-    comm_status=${?}
-
     filename=$(basename "${file}" | awk -F '.' '{print $1}')
     res_tmp=$(mktemp)
-    echo $("${dir}/validate.sh" "${file}") >> $res_tmp
+    "${dir}/validate.sh" "${file}" >> $res_tmp
+    comm_status=${?}
 
     if [[ "${comm_status}" -eq 0 ]]; then
         # Save the valid data to foo.conf
-        while read line; do
-            echo "${line}" >> "${dir}/foo.conf"
-        done < "${file}"
+        cat "${file}" >> "${foo_tmp}"
 
         # Create user in foo.pwd if doent exist
         if ! cat "${dir}/foo.pwd" | egrep -q "^${filename}:"; then
             passwd=$(pwgen)
             passwd_hash=$(mkpasswd ${passwd})
-            echo "$filename:$passwd_hash" >> "${dir}/foo.pwd"
+            echo "${filename}:${passwd_hash}" >> "${dir}/foo.pwd"
         fi
     elif [[ "${comm_status}" -eq 1 ]]; then
         # Add lines of broken file to tmp
@@ -45,4 +41,5 @@ while read file; do
 done < <(find "${dir}/cfg" -type f -name "*\.cfg")
 
 cat $broken_files_lines >&2
-rm "${broken_files_lines}"
+cp "${foo_tmp}" "${dir}/foo.conf"
+rm "${broken_files_lines}" "${foo_tmp}"
