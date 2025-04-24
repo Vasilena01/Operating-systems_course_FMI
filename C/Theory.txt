@@ -1,0 +1,27 @@
+- where to write our c code in the main file from this dir: cp -r /srv/c_sample/ task1
+
+-- COMMANDS:
+- exit(exit status, message: %s"message"), no po-dobre da izpolzvame err
+- err(exit status, message: %s"message")
+- errno - gets the status of the last executed command
+- warn - nqma da prekrati programata
+- warn - shte prekrati programata
+- close(fd - file descriptor) - closes the file
+	- returns < 0 if unsucessfull
+	- returns 0 if ok
+- open <file>
+	- returns -1, if the file can't be opened
+	- returns 0, if the file can be opened
+- <n read bytes> read(fd, buff, sizeof(buff)) - primer za buffer: &c, sizeof(c)
+	- -1 - sucessefull read
+	- 0 - end of file
+	- n != sizeof(buff) - end of file while reading or there was another problem
+	- n == sizeof(buff) - ok
+- make - compile the main.c file
+- lseek(fd, offset(>/< 0), SEEK_END/SET(v nachaloto)/CURR) - 
+	- -1 - sucessefull read
+	- 0 - end of file
+	- n != sizeof(buff) - end of file while reading or there was another problem
+	- n == sizeof(buff) - ok
+- struct stat??? - st_size - za da vzemem siza na fila
+- snprintf - ako iskame da otpechatvame chislo (no printf etc, ne gi izpolzvame)

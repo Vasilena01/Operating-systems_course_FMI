@@ -1,0 +1,52 @@
+// Реализирайте команда wc, с един аргумент подаден като входен параметър
+
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <stdbool.h>
+#include <err.h>
+
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        errx(1, "Expected 1 argument");
+    }
+
+    int fd1;
+    const char* file = argv[1];
+
+    if ((fd1 = open(file, O_RDONLY)) == -1) {
+        err(2, "Can't open file %s", file);
+    }
+
+    char ch;
+    int lines = 0;
+    int words = 0;
+    int chars = 0;
+    bool isWord = false;
+
+    while (read(fd1, &ch, sizeof(ch)) == sizeof(ch)) {
+        chars++;
+
+        if (ch == '\n') {
+            lines++;
+
+            if (isWord) {
+                words++;
+                isWord = false;
+            }
+        } else if (ch == ' ') {
+            words++;
+            isWord = false;
+        } else {
+            isWord = true;
+        }
+    }
+
+    printf("Lines: %d\n", lines);
+    printf("Words: %d\n", words);
+    printf("Chars: %d\n", chars);
+
+    close(fd1);
+    exit(0);
+}

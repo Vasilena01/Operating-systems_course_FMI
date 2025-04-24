@@ -1,0 +1,96 @@
+// Реализирайте команда swap,
+//разменяща съдържанието на два файла, подадени като входни параметри.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <err.h>
+
+void close_all(int fd1, int fd2, int fdtmp, const char* tmp_filename) {
+    if (fd1 != -1) close(fd1);
+    if (fd2 != -1) close(fd2);
+    if (fdtmp != -1) close(fdtmp);
+    if (tmp_filename) unlink(tmp_filename);
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        errx(1, "Expected 2 args");
+    }
+
+    int fd1;
+    int fd2;
+    int fdtmp;
+    const char* file1 = argv[1];
+    const char* file2 = argv[2];
+    char tmp_filename[] = "/tmp/XXXXXX";
+
+    if ((fd1 = open(file1, O_RDWR)) == -1) {
+        err(2, "Can't open file %s", file1);
+    }
+
+    if ((fd2 = open(file2, O_RDWR)) == -1) {
+        close(fd1);
+        err(2, "Can't open file %s", file2);
+    }
+
+    if ((fdtmp = mkstemp(tmp_filename)) == -1) {
+        close(fd1);
+        close(fd2);
+        err(2, "Failed to create a tmp file");
+    }
+
+    char buff[4096];
+    int bytesCount;
+
+    // Saving file1 info to tmp file
+    while ((bytesCount = read(fd1, &buff, sizeof(buff))) > 0) {
+       if (write(fdtmp, &buff, bytesCount) != bytesCount) {
+            close_all(fd1, fd2, fdtmp, tmp_filename);
+            err(3, "Failed to write lines to tmp file");
+       }
+    }
+
+    if (bytesCount == -1) {
+        close_all(fd1, fd2, fdtmp, tmp_filename);
+        err(3, "Failed to read lines from file %s", file1);
+    }
+
+    if (lseek(fd1, 0, SEEK_SET) == -1){
+        err(3,"Error while seeking");
+    }
+
+    // Writing file2 info to file1
+    while ((bytesCount = read(fd2, &buff, sizeof(buff))) > 0) {
+       if (write(fd1, &buff, bytesCount) != bytesCount) {
+            close_all(fd1, fd2, fdtmp, tmp_filename);
+            err(3, "Failed to write lines to file %s", file1);
+       }
+    }
+
+    if (bytesCount == -1) {
+        close_all(fd1, fd2, fdtmp, tmp_filename);
+        err(3, "Failed to read lines from file %s", file2);
+    }
+
+    if (lseek(fd2, 0, SEEK_SET) == -1 || lseek(fdtmp, 0, SEEK_SET) == -1){
+        err(3,"Error while seeking");
+    }
+
+    // Writing file2 info to file1
+    while ((bytesCount = read(fdtmp, &buff, sizeof(buff))) > 0) {
+       if (write(fd2, &buff, bytesCount) != bytesCount) {
+            close_all(fd1, fd2, fdtmp, tmp_filename);
+            err(3, "Failed to write lines to file %s", file2);
+       }
+    }
+
+    if (bytesCount == -1) {
+        close_all(fd1, fd2, fdtmp, tmp_filename);
+        err(3, "Failed to read lines from tmp file");
+    }
+
+    close_all(fd1, fd2, fdtmp, tmp_filename);
+    exit(0);
+}

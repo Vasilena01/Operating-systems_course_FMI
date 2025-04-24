@@ -1,0 +1,47 @@
+// копирайте съдържанието на файл1 във файл2
+
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <err.h>
+
+int main(int argc, char* argv[]) {
+    if(argc != 3) {
+        errx(1, "Args count should be 2");
+    }
+
+    int fd1, fd2;
+    const char* file1 = argv[1];
+    const char* file2 = argv[2];
+
+    if ((fd1 = open(file1, O_RDONLY)) == -1) {
+        err(2, "Couldn't open file %s", file1);
+    }
+
+    if ((fd2 = open(file2, O_CREAT | O_TRUNC | O_WRONLY)) == -1) {
+        close(fd1);
+        err(2, "Counldn't open file %s", file2);
+    }
+
+    char ch;
+    int bytesCount;
+
+    while ((bytesCount = read(fd1, &ch, sizeof(ch))) == sizeof(ch)) {
+        if((write(fd2, &ch, sizeof(ch))) != sizeof(ch)) {
+            close(fd1);
+            close(fd2);
+            err(3, "Failed to write in file %s", file2);
+        }
+    }
+
+    if (bytesCount == -1) {
+        close(fd1);
+        close(fd2);
+        err(4, "Failed to read from file %s", file1);
+    }
+
+    close(fd1); 
+    close(fd2);
+    exit(0);
+}
+
