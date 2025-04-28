@@ -1,0 +1,69 @@
+// Koпирайте файл /etc/passwd в текущата ви работна директория
+// и променете разделителят на копирания файл от ":", на "?"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <err.h>
+
+int main(int argc, char* argv[]) {
+
+    if (argc != 2) {
+        errx(1, "Expected 1 arg - passwd file");
+    }
+
+    int fd;
+    int fdtmp;
+    const char* file = argv[1];
+    char tmp_filename[] = "/tmp/XXXXXX";
+
+    if ((fd = open(file, O_RDWR)) == -1) {
+        err(2, "Couldn't open file %s", file);
+    }
+
+    if ((fdtmp = mkstemp(tmp_filename)) == -1) {
+        close(fd);
+        err(2, "Couldn't open file %s", tmp_filename);
+    }
+
+    char ch;
+    int bytesCount;
+
+    while ((bytesCount = read(fd, &ch, sizeof(ch))) == 1) {
+        if (ch == ':') {
+            ch = '?';
+        }
+
+        if (write(fdtmp, &ch, sizeof(ch)) != bytesCount) {
+            err(3, "Couldn't write char to tmp file");
+        }
+    }
+
+    if (bytesCount == -1) {
+        err(4, "Couldn't read char from file %s", file);
+    }
+
+    if (lseek(fd, 0, SEEK_SET) == -1) {
+        err(3, "Error while seeking");
+    }
+
+    if (lseek(fdtmp, 0, SEEK_SET) == -1) {
+        err(3, "Error while seeking");
+    }
+
+    char buff[1024];
+    while ((bytesCount = read(fdtmp, &buff, sizeof(buff))) > 0) {
+        if (write(fd, &buff, bytesCount) != bytesCount) {
+            err(4, "Couldn't write bytes into file %s", file);
+        }
+    }
+
+    if (bytesCount == -1) {
+        err(5, "Couldn't read bytes from tmpfile");
+    }
+
+    close(fd);
+    close(fdtmp);
+    unlink(tmp_filename);
+}

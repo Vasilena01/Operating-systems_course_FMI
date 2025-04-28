@@ -1,0 +1,36 @@
+// Create a cat command with args
+
+#include <err.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+int main(int argc, char* argv[]) {
+
+    for(int i = 1; i < argc; i++) {
+        int fd;
+        const char* curr = argv[i];
+
+        if ((fd = open(curr, O_RDONLY)) == -1) {
+            err(1, "Couldn't open file %s", curr);
+        }
+
+        char buff[1024];
+        int bytesCount;
+
+        while((bytesCount = read(fd, &buff, sizeof(buff))) > 0) {
+            if(write(1, &buff, bytesCount) != bytesCount) {
+                close(fd);
+                err(2, "Couldn't output the bytes to std::out");
+            }
+        }
+
+        if (bytesCount == -1) {
+            close(fd);
+            err(3, "Couldn't read bytes from file %s", curr);
+        }
+
+        close(fd);
+    }
+}
