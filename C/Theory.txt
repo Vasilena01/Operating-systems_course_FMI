@@ -23,5 +23,17 @@
 	- 0 - end of file
 	- n != sizeof(buff) - end of file while reading or there was another problem
 	- n == sizeof(buff) - ok
-- struct stat??? - st_size - za da vzemem siza na fila
+- struct stat??? - st_size - za da vzemem siza na fila idva ot includ-a sys/stat.h
+- stat(<path>, <struct stat>)
+- fstat(<fd>, <struct stat>)
+- xxd <file> - shows the hex representation of the binary file
 - snprintf - ako iskame da otpechatvame chislo (no printf etc, ne gi izpolzvame)
+- pri open na file za pravata syntaxis - S_I{R,W,X}{USR,OTH,GR}
+- atoi(const char*) - asski to integer - izpolzvame da sravnqvame chisla (v stdlib.h)
+
+Zadachi:
+2016-SE-02
+2017-SE-02
+2018-SE-03
+2017-IN-01
+2023-SE-01!
