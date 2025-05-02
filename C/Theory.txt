@@ -32,8 +32,15 @@
 - atoi(const char*) - asski to integer - izpolzvame da sravnqvame chisla (v stdlib.h)
 
 Zadachi:
-2016-SE-02
-2017-SE-02
-2018-SE-03
-2017-IN-01
+2016-SE-02 \/
+2017-SE-02 \/
+2017-SE-01 \/
+2018-SE-03 \/
+2017-IN-01 \/
 2023-SE-01!
+
+DAY TODO:
+os
+oop
+sars
+dupr
