@@ -30,14 +30,24 @@
 - snprintf - ako iskame da otpechatvame chislo (no printf etc, ne gi izpolzvame)
 - pri open na file za pravata syntaxis - S_I{R,W,X}{USR,OTH,GR}
 - atoi(const char*) - asski to integer - izpolzvame da sravnqvame chisla (v stdlib.h)
+- strtol(str, endptr, <numerical system> - 10) - string to long func, almost same as atoi (
+	endptr shte sochi ot symvola != ot chislo, do kraq na stringa)
 
+Proccesses:
+- qsort
+- execl (<pathname - path to the command (command pathname - like /bin/cat...)>, <command_name(cat)>, <args_of_command>) 
+	- we can call outter programs in our c program
+- execlp (<command_name>, <command_name>, <args_of_command>) - sam namira putq do komandata
+	! exec comandata kato se pusne se puska nov proces, sled kojto ne mojem da se vurnem kum purvonachalniq
+	zatova izpolzvame fork
+- fork - creates a new process a copy of the current one, by copying all data from the current process - its descriptors, inner data etc.
+- wait
+	status:
+		- WIFEXITED - shows if the child terminate normally, by calling exit or returning from main
+		- WEXITSTATUS - This macro extracts the exit code from the child's termination status
+				(but only if WIFEXITED(status) is true!), exit(42); Then WEXITSTATUS(status) → 42
 Zadachi:
-2016-SE-02 \/
-2017-SE-02 \/
-2017-SE-01 \/
-2018-SE-03 \/
-2017-IN-01 \/
-2023-SE-01!
+
 
 DAY TODO:
 os

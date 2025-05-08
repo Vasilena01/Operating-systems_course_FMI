@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <err.h>
+#include <sys/wait.h>
+
+//Да се напише програма на C, която която създава файл в текущата директория и
+//генерира два процесa,
+//които записват низовете foo и bar в създадения файл.
+//Програмата не гарантира последователното записване на низове.
+//Променете програмата така, че да записва низовете последователно,
+//като първия е foo.
+
+int main(void) {
+    const char* filename = "f1";
+    int fd = open(filename, O_RDWR | O_TRUNC | O_CREAT, 0644);
+    if (fd == -1) {
+        err(1, "Failed to open file");
+    }
+
+    close(fd);
+
+    pid_t child1_pid = fork();
+
+    if (child1_pid == -1) {
+        err(2, "Failed to fork");
+    }
+
+    if (child1_pid == 0) {
+        int fd1 = open(filename, O_WRONLY | O_APPEND);
+
+        if (fd1 == -1) {
+            err(1, "Failed to open file");
+        }
+
+        if (write(fd1, "foo", 3) != 3) {
+            err(3, "Failed to write to file");
+        }
+
+        close(fd1);
+        exit(0);  // <---- THIS exit is important
+    }
+
+    int childStatus;
+
+    if (wait(&childStatus) == -1) {
+        err(4, "Failed to wait for child");
+    }
+
+    fd = open(filename, O_WRONLY | O_APPEND);
+    if (fd == -1) {
+        err(5, "Failed to open file");
+    }
+
+    if (write(fd, "bar", 3) != 3) {
+        err(6, "Failed to write to file");
+    }
+
+    write(fd, "\n", 1);
+    close(fd);
+    exit(0);
+}

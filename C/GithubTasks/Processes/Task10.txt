@@ -1,0 +1,54 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <err.h>
+#include <sys/wait.h>
+
+// Да се напише програма на C, която получава като параметри
+// от команден ред две команди (без параметри).
+// Изпълнява първата. Ако тя е завършила успешно изпълнява втората.
+// Ако не, завършва с код 42.
+
+void executeCommand(const char* cmd) {
+    if (execlp(cmd, cmd, (char*)NULL) == -1) {
+        err(3, "Failed to execute cmd %s", cmd);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        errx(1, "Expected 2 args");
+    }
+
+    const char* cmd1 = argv[1];
+    const char* cmd2 = argv[2];
+
+    pid_t child1_pid = fork();
+
+    if (child1_pid == -1) {
+        err(2, "Failed to fork");
+    }
+
+    if (child1_pid == 0) {
+        executeCommand(cmd1);
+        exit(0);
+    }
+
+    int status;
+    if (wait(&status) == -1) {
+        err(4, "Failed to wait for cmd1");
+    }
+
+    if (!WIFEXITED(status)) {
+        errx(42, "Cmd %s didn't terminated normally", cmd1);
+    }
+
+    if (WEXITSTATUS(status)) {
+        errx(42, "Cmd %s terminated with exit status not 0", cmd1);
+    }
+
+    executeCommand(cmd2);
+    exit(0);
+}

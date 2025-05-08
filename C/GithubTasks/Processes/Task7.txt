@@ -1,0 +1,26 @@
+ }
+ 85
+ 86     if (child3_pid == 0) {
+ 87
+ 88         if (execlp(cmd3, "cmd3", (char*)NULL) == -1) {
+ 89             err(2, "Couldn't exec cmd %s", cmd3);
+ 90         }
+ 91     }
+ 92
+ 93     int child3Status;
+ 94     if (wait(&child3Status) == -1) {
+ 95         err(4, "couldn't wait child 3");
+ 96     }
+ 97
+ 98     if (!(WIFEXITED(child3Status))) {
+ 99         errx(5, "child3 did not terminate normally");
+100     }
+101
+102     if(WEXITSTATUS(child3Status)) {
+103         errx(6, "child3 exit code not 0");
+104     }
+105
+106     dprintf(1, "command %s was successfully executed %d\n", cmd3, WEXITSTATUS(ch
+107
+108     exit(0);
+109 }

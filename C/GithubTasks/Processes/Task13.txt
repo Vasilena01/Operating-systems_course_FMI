@@ -1,0 +1,62 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <err.h>
+#include <sys/wait.h>
+
+// Да се напише програма на C, която получава като командни параметри
+// две команди (без параметри). Изпълнява ги
+// едновременно и извежда на стандартния изход номера на процеса на
+// първата завършила успешно.
+// Ако нито една не завърши успешно извежда -1.
+
+void executeCommand(const char* cmd) {
+    pid_t child_pid = fork();
+
+    if (child_pid == -1) {
+        err(2, "Failed to fork");
+    }
+
+    if (child_pid == 0) {
+        if (execlp(cmd, cmd, (char*)NULL) == -1) {
+            err(3, "Failed to execute cmd %s", cmd);
+        }
+    }
+}
+
+int main(int argc, char* argv[]) {
+
+    if (argc != 3) {
+        errx(1, "Expected 2 args");
+    }
+
+    const char* cmd1 = argv[1];
+    const char* cmd2 = argv[2];
+
+    executeCommand(cmd1);
+    executeCommand(cmd2);
+
+    int status1, status2;
+    const pid_t first = wait(&status1);
+    if (first == -1) {
+        err(4, "Couldn't wait for any process");
+    }
+
+    if (WIFEXITED(status1) && !WEXITSTATUS(status1)) {
+        dprintf(1, "%d\n", first);
+    } else {
+        const pid_t second = wait(&status2);
+
+        if (second == -1) {
+            err(4, "Couldn't wait for any process");
+        }
+
+        if (WIFEXITED(status2) && !WEXITSTATUS(status2)) {
+            dprintf(1, "%d\n", second);
+        } else {
+            dprintf(1, "%d\n", -1);
+        }
+    }
+}

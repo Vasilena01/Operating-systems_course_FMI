@@ -1,0 +1,76 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#include <err.h>
+#include <sys/wait.h>
+
+// Да се напише програма на C, която получава като параметри от команден ред
+// две команди (без параметри) и име на файл
+// в текущата директория. Ако файлът не съществува, го създава.
+// Програмата изпълнява командите последователно,
+// по реда на подаването им. Ако първата команда завърши успешно,
+// програмата добавя нейното име към съдържанието на файла,
+// подаден като команден параметър. Ако командата завърши неуспешно,
+// програмата уведомява потребителя чрез подходящо съобщение.
+
+void executeCommand(const char* cmd) {
+    pid_t child_pid = fork();
+    if (child_pid == -1) {
+        err(2, "Failed to fork process");
+    }
+
+    if (child_pid == 0) {
+        if (execlp(cmd, cmd, (char*)NULL) == -1) {
+            err(4, "Failed to execute command %s", cmd);
+        }
+    }
+}
+
+int main(int argc, char* argv[]) {
+
+    if (argc != 4) {
+        errx(1, "Expected 3 args");
+    }
+
+    const char* cmd1 = argv[1];
+    const char* cmd2 = argv[2];
+    const char* filename = argv[3];
+    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+    if (fd == -1) {
+        err(3, "Failed to open file");
+    }
+
+    executeCommand(cmd1);
+
+    int status;
+    if (wait(&status) == -1) {
+        err(5, "Couldn't wait for child process");
+    }
+
+    if (WIFEXITED(status)) {
+        if (WEXITSTATUS(status) == 0) {
+            if (write(fd, cmd1, strlen(cmd1)) == -1) {
+                close(fd);
+                err(6, "Couldn't write to file");
+            }
+            write(fd, "\n", 1);
+        } else {
+            err(7, "Exit status not 0");
+        }
+    } else {
+        err(8, "Command didn't terminated normally");
+    }
+
+    executeCommand(cmd2);
+
+    int status2;
+    if (wait(&status2) == -1) {
+        err(9, "Couldn't wait for child process");
+    }
+
+    exit(0);
+}
