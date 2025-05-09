@@ -32,20 +32,25 @@
 - atoi(const char*) - asski to integer - izpolzvame da sravnqvame chisla (v stdlib.h)
 - strtol(str, endptr, <numerical system> - 10) - string to long func, almost same as atoi (
 	endptr shte sochi ot symvola != ot chislo, do kraq na stringa)
-
+- stdio - vsichko ot neq e zabraneno osven snprintf, za konvertirane na chislata
+- tmux new - za splitvane na dve na terminala 
 Proccesses:
 - qsort
-- execl (<pathname - path to the command (command pathname - like /bin/cat...)>, <command_name(cat)>, <args_of_command>) 
-	- we can call outter programs in our c program
-- execlp (<command_name>, <command_name>, <args_of_command>) - sam namira putq do komandata
+- execl (<pathname - path to the command (command pathname - like /bin/cat...)>, <command_name(cat)>, <args_of_command>...NULL) 
+	- we can call outter programs in our c program, l - stands for list of params
+- execv - same as execl, but v - stands for one huge string with all params in it
+- execp - same as above, but the pathname can be without the /bin/<command> part, just can be the <command>
+- !execlp (<command_name>, <command_name>, <args_of_command>) - sam namira putq do komandata
 	! exec comandata kato se pusne se puska nov proces, sled kojto ne mojem da se vurnem kum purvonachalniq
 	zatova izpolzvame fork
+- which <command_name> - ve terminala kato go napishem, dava lokaciqta na komandata
 - fork - creates a new process a copy of the current one, by copying all data from the current process - its descriptors, inner data etc.
 - wait
 	status:
 		- WIFEXITED - shows if the child terminate normally, by calling exit or returning from main
 		- WEXITSTATUS - This macro extracts the exit code from the child's termination status
 				(but only if WIFEXITED(status) is true!), exit(42); Then WEXITSTATUS(status) → 42
+- ppid - id of the parent process
 Zadachi:
 
 
