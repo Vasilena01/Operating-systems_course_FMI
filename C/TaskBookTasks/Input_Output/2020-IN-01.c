@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
     int fdFile2 = asserted_open(argv[3], O_WRONLY | O_CREAT | O_TRUNC, &perms);
 
     Header header;
-    asserted_read(fdPatch, (void*)&header, sizeof(header));   // <-- fixed: read patch header from patch.bin
+    asserted_read(fdPatch, (void*)&header, sizeof(header));
 
     if (header.magic != 0xEFBEADDE || header.headerVersion != 0x01) {
         err(3, "Patch file doesn't follow the needed specification or header version mismatch");
