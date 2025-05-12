@@ -45,13 +45,14 @@ Proccesses:
 	zatova izpolzvame fork
 - which <command_name> - ve terminala kato go napishem, dava lokaciqta na komandata
 - fork - creates a new process a copy of the current one, by copying all data from the current process - its descriptors, inner data etc.
-- wait
+- wait - returns the pid of the child process which has unblocked the parent one 
 	status:
 		- WIFEXITED - shows if the child terminate normally, by calling exit or returning from main
 		- WEXITSTATUS - This macro extracts the exit code from the child's termination status
 				(but only if WIFEXITED(status) is true!), exit(42); Then WEXITSTATUS(status) → 42
 - ppid - id of the parent process
 Zadachi:
+- 2020-SE-01 - da q reshim i moeto reshenie izobshto taka li e
 
 
 DAY TODO:
