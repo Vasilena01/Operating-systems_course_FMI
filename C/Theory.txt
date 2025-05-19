@@ -27,7 +27,9 @@
 - stat(<path>, <struct stat>)
 - fstat(<fd>, <struct stat>)
 - xxd <file> - shows the hex representation of the binary file
+- snprintf(char* buff, sizeof(buff), "string to print/save to buff can have %d,%s etc", args_for_the_string)
 - snprintf - ako iskame da otpechatvame chislo (no printf etc, ne gi izpolzvame)
+- dprintf(int fd, "String to print to fd", args_of_string)
 - pri open na file za pravata syntaxis - S_I{R,W,X}{USR,OTH,GR}
 - atoi(const char*) - asski to integer - izpolzvame da sravnqvame chisla (v stdlib.h)
 - strtol(str, endptr, <numerical system> - 10) - string to long func, almost same as atoi (
@@ -51,12 +53,15 @@ Proccesses:
 		- WEXITSTATUS - This macro extracts the exit code from the child's termination status
 				(but only if WIFEXITED(status) is true!), exit(42); Then WEXITSTATUS(status) → 42
 - ppid - id of the parent process
+- pri pipovete - to edin process trqbva da pravi samo edno neshto - da pishe ili da chete v pip-a
+- dup2(pd[1], 1) - prenasochvame standart outputa da sochi veche kum outputa na pipa (=> sled tova veche mojem da zatvorim descriptora,
+			kojto e bil otdelen v nachaloto za outputa na pipa - close(pd[1])). Sled tova kato iskame da chetem s exec komandata ot pipa 
+			t.e shte chetem s standart input, to trqbva da prenasochim standart input kum pd[0], t.e informaciqta, koqto veche idva ot pd[0]
+			shte otiva na standart inputa
 Zadachi:
 - 2020-SE-01 - da q reshim i moeto reshenie izobshto taka li e
 
-
-DAY TODO:
-os
-oop
-sars
-dupr
+Vuprosi:
+- primer zashto close-vame pd[1], pd[0] - predi da napravim protivopolojnoto v parent ili child-a
+- kato forknem process - to se kopirat vs file descr => pishejki ot deteto, to se otrazqva i v roditelq nali
+-  zashto otdolu roditelq vinagi trqbva da chaka decata si da prikluchat izpulnenie

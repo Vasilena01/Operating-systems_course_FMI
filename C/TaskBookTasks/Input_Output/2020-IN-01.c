@@ -43,16 +43,6 @@ int asserted_open(const char* filename, int mode, int* options) {
     return fd;
 }
 
-off_t asserted_lseek(int fd, off_t offset, int whence) {
-    off_t ls = lseek(fd, offset, whence);
-
-    if (ls < 0) {
-        err(2, "Failed to lseek %d", fd);
-    }
-
-    return ls;
-}
-
 int asserted_read(int fd, void* buff, int size) {
     int bytesCount;
 
@@ -73,10 +63,20 @@ int asserted_write(int fd, void* buff, int size) {
     return bytesCount;
 }
 
+int asserted_lseek(int fd, off_t offset, int whence) {
+    int ls = lseek(fd, offset, whence);
+
+    if (ls < 0) {
+        err(2, "Failed to lseek");
+    }
+
+    return ls;
+}
+
 int main(int argc, char* argv[]) {
 
     if (argc != 4) {
-        err(1, "Expected 3 args: ./main patch.bin f1.bin f2.bin");
+        err(1, "Expected 3 args");
     }
 
     int fdPatch = asserted_open(argv[1], O_RDONLY, NULL);
@@ -88,79 +88,80 @@ int main(int argc, char* argv[]) {
     asserted_read(fdPatch, (void*)&header, sizeof(header));
 
     if (header.magic != 0xEFBEADDE || header.headerVersion != 0x01) {
-        err(3, "Patch file doesn't follow the needed specification or header version mismatch");
+        err(3, "Patch file doesn't follow the needed specification or header version is wrong");
+    }
+
+    // Check if patch file has correct size
+    struct stat st;
+    if (fstat(fdPatch, &st) == -1) {
+        err(3, "Failed to fstat");
     }
 
     if (header.dataVersion == 0x00) {
         Data1 data;
-        uint16_t lastAccessedIndex = 0;
+
+        if (st.st_size != (long int)(sizeof(data) * header.count)) {
+            err(4, "Incorrect patch file size");
+        }
+
         uint8_t currByte;
+        int bytesRead;
+        while ((bytesRead = asserted_read(fdFile1, &currByte, sizeof(currByte))) > 0) {
+            asserted_write(fdFile2, &currByte, sizeof(currByte));
+        }
 
-        while (asserted_read(fdPatch, (void*)&data, sizeof(data)) > 0) {
+        if (bytesRead < 0) {
+            err(4, "Failed to read from file1");
+        }
 
-            // Write all bytes before offset
-            for (uint16_t i = lastAccessedIndex; i < data.offset; i++) {
-                asserted_read(fdFile1, (void*)&currByte, sizeof(currByte));
-                asserted_write(fdFile2, (void*)&currByte, sizeof(currByte));
-            }
+        while (asserted_read(fdPatch, &data, sizeof(data)) > 0) {
+            asserted_lseek(fdFile2, data.offset, SEEK_SET);
 
-            // Read byte at position offset
-            asserted_read(fdFile1, (void*)&currByte, sizeof(currByte));
+            // Read and write byte at position offset
+            asserted_read(fdFile2, &currByte, sizeof(currByte));
             if (currByte == data.originalByte) {
-                asserted_write(fdFile2, (void*)&data.newByte, sizeof(data.newByte));
+                asserted_lseek(fdFile2, data.offset, SEEK_SET);
+                asserted_write(fdFile2, &data.newByte, sizeof(data.newByte));
             }
             else {
-                err(7, "Current byte is not equal to original byte at offset %u", data.offset);
+                err(7, "Current byte is not equal to original byte");
             }
-
-            lastAccessedIndex = data.offset + 1;
         }
-
-        // Write the rest of the data from file1 to file2
-        while (asserted_read(fdFile1, (void*)&currByte, sizeof(currByte))) {
-            asserted_write(fdFile2, (void*)&currByte, sizeof(currByte));
-        }
-
     }
     else if (header.dataVersion == 0x01) {
         Data2 data;
-        uint32_t lastAccessedIndex = 0;
+        if (st.st_size != (long int)(sizeof(data) * header.count)) {
+            err(4, "Incorrect patch file size");
+        }
+
         uint16_t currWord;
+        int bytesRead;
+        while ((bytesRead = asserted_read(fdFile1, &currWord, sizeof(currWord))) > 0) {
+            asserted_write(fdFile2, &currWord, sizeof(currWord));
+        }
 
-        while (asserted_read(fdPatch, (void*)&data, sizeof(data)) > 0) {
+        if (bytesRead < 0) {
+            err(4, "Failed to read from file1");
+        }
 
-            // Write all words before offset
-            for (uint32_t i = lastAccessedIndex; i < data.offset; i++) {
-                asserted_read(fdFile1, (void*)&currWord, sizeof(currWord));
-                asserted_write(fdFile2, (void*)&currWord, sizeof(currWord));
-            }
-
-            // Read word at position offset
-            asserted_read(fdFile1, (void*)&currWord, sizeof(currWord));
+        while (asserted_read(fdPatch, &data, sizeof(data)) > 0) {
+            asserted_lseek(fdFile2, data.offset, SEEK_SET);
+            // Read and write word at position offset
+            asserted_read(fdFile2, &currWord, sizeof(currWord));
             if (currWord == data.originalWord) {
-                asserted_write(fdFile2, (void*)&data.newWord, sizeof(data.newWord));
+                asserted_lseek(fdFile2, data.offset, SEEK_SET);
+                asserted_write(fdFile2, &data.newWord, sizeof(data.newWord));
             }
             else {
-                err(7, "Current word is not equal to original word at offset %u", data.offset);
+                err(7, "Current word is not equal to original word");
             }
-
-            lastAccessedIndex = data.offset + 1;
         }
-
-        // Write the rest of the data from file1 to file2
-        while (asserted_read(fdFile1, (void*)&currWord, sizeof(currWord))) {
-            asserted_write(fdFile2, (void*)&currWord, sizeof(currWord));
-        }
-
     }
     else {
-        err(3, "Can't read data from unknown data version %02x", header.dataVersion);
+        err(3, "Can't read data from unknown version");
     }
 
-    // Close all file descriptors
     close(fdPatch);
     close(fdFile1);
     close(fdFile2);
-
-    return 0;
 }
