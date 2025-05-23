@@ -9,7 +9,7 @@ int asserted_open(const char* filename, int mode, int* perms) {
     int fd;
 
     if (perms != NULL) {
-        fd = open(filename, mode, *perms);
+        fd = open(filename, mode, perms);
     }
     else {
         fd = open(filename, mode);
@@ -43,6 +43,7 @@ int asserted_write(int fd, void* buff, int size) {
 }
 
 int main(int argc, char* argv[]) {
+
     if (argc != 3) {
         err(1, "Expected 2 args to be passed");
     }
@@ -53,25 +54,26 @@ int main(int argc, char* argv[]) {
 
     int bytesCount;
     uint8_t currByte;
-
     while ((bytesCount = asserted_read(fdInput, &currByte, sizeof(currByte))) > 0) {
         uint16_t newByte = 0;
+        uint8_t mask = 1;
 
-        for (int i = 7; i >= 0; i--) {
-            uint8_t bit = (currByte >> i) & 1;
-            uint16_t newBit;
+        for (int i = 0; i < 8; i++) {
+            uint8_t bit = currByte & (mask << i);
 
             if (bit == 0) {
-                newBit = 1 << ((7 - i) * 2);  // Encodes 0 as 01
+                newByte |= 1 << i * 2;
             }
             else {
-                newBit = 2 << ((7 - i) * 2);  // Encodes 1 as 10
+                newByte |= 2 << i * 2;
             }
-
-            newByte |= newBit;
         }
 
-        asserted_write(fdOutput, &newByte, sizeof(newByte));
+        // To solve the problem with the endianess
+        uint8_t* newBytePtr = (uint8_t*)&newByte;
+
+        asserted_write(fdOutput, &newBytePtr[1], sizeof(uint8_t));
+        asserted_write(fdOutput, &newBytePtr[0], sizeof(uint8_t));
     }
 
     if (bytesCount < 0) {
@@ -80,6 +82,4 @@ int main(int argc, char* argv[]) {
 
     close(fdInput);
     close(fdOutput);
-
-    return 0;
 }

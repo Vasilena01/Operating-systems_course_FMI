@@ -58,8 +58,15 @@ Proccesses:
 			kojto e bil otdelen v nachaloto za outputa na pipa - close(pd[1])). Sled tova kato iskame da chetem s exec komandata ot pipa 
 			t.e shte chetem s standart input, to trqbva da prenasochim standart input kum pd[0], t.e informaciqta, koqto veche idva ot pd[0]
 			shte otiva na standart inputa
+- dprintf writes a formatted string to a file descriptor: dprintf(fd, "User %s has score %d\n", "Alice", 95);
+- snprintf formats a string into a buffer (char array) with a limit on the size — it prevents buffer overflows
+	char buffer[20];
+	snprintf(buffer, sizeof(buffer), "Score: %d", 12345);
+
+- /srv/sample-data/03-c/<task>
 Zadachi:
-- 2020-SE-01 - da q reshim i moeto reshenie izobshto taka li e
+- 2023-SE-02 ???
+- 2023-IN-01 ot input/output i ot processes
 
 Vuprosi:
 - primer zashto close-vame pd[1], pd[0] - predi da napravim protivopolojnoto v parent ili child-a
