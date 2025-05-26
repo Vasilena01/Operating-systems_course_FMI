@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\!2023-IN-01.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:!2023-IN-01.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\!2022-IN-01.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:!2022-IN-01.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
@@ -47,19 +51,32 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "!2023-IN-01.c",
+              "DocumentMoniker": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\!2023-IN-01.c",
+              "RelativeDocumentMoniker": "!2023-IN-01.c",
+              "ToolTip": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\!2023-IN-01.c",
+              "RelativeToolTip": "!2023-IN-01.c",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-05-25T15:06:17.044Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "!2022-IN-01.c",
               "DocumentMoniker": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\!2022-IN-01.c",
               "RelativeDocumentMoniker": "!2022-IN-01.c",
               "ToolTip": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\!2022-IN-01.c",
               "RelativeToolTip": "!2022-IN-01.c",
-              "ViewState": "AgIAAKUAAAAAAAAAAAAcwLUAAAARAAAAAAAAAA==",
+              "ViewState": "AgIAAKUAAAAAAAAAAAAcwLMAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2025-05-20T11:24:48.542Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "2021-SE-01.c",
               "DocumentMoniker": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\2021-SE-01.c",
               "RelativeDocumentMoniker": "2021-SE-01.c",
@@ -67,12 +84,11 @@
               "RelativeToolTip": "2021-SE-01.c",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAALQAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
-              "WhenOpened": "2025-05-19T07:02:28.523Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-05-19T07:02:28.523Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "2020-SE-02.c",
               "DocumentMoniker": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\2020-SE-02.c",
               "RelativeDocumentMoniker": "2020-SE-02.c",
@@ -84,7 +100,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "!2020-SE-01.c",
               "DocumentMoniker": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\!2020-SE-01.c",
               "RelativeDocumentMoniker": "!2020-SE-01.c",
@@ -96,7 +112,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "2017-IN-01.c",
               "DocumentMoniker": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\2017-IN-01.c",
               "RelativeDocumentMoniker": "2017-IN-01.c",
@@ -108,7 +124,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "2020-SE-03.c",
               "DocumentMoniker": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\2020-SE-03.c",
               "RelativeDocumentMoniker": "2020-SE-03.c",
@@ -120,7 +136,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "2019-SE-01.c",
               "DocumentMoniker": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\2019-SE-01.c",
               "RelativeDocumentMoniker": "2019-SE-01.c",
@@ -132,7 +148,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "2017-IN-02.c",
               "DocumentMoniker": "D:\\Projects\\OS_FMI_Course\\Operating-systems_course_FMI\\C\\TaskBookTasks\\Processes\\2017-IN-02.c",
               "RelativeDocumentMoniker": "2017-IN-02.c",

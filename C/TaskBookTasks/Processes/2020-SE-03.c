@@ -287,6 +287,9 @@ int main(int argc, char* argv[]) {
             }
 
             asserted_write(pd[1], (void*)&res, sizeof(res));
+            // We close everything before we exit the child, so all pipe descriptors to be closed before we exit
+            close(pd[1]);
+            close_all();
             exit(0);
         }
     }
@@ -307,6 +310,15 @@ int main(int argc, char* argv[]) {
 
     dprintf(1, "%dB\n", finalResult);
 
+    // Before we exit we need to wait all children
+    for (int i = 0; i < structCount; i++) {
+        int status;
+        if (wait(&status) < 0) {
+            err(11, "Failed to wait child");
+        }
+    }
+
+    close(pd[0]);
     close_all();
     return 0;
 }
