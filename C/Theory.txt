@@ -65,8 +65,9 @@ Proccesses:
 
 - /srv/sample-data/03-c/<task>
 Zadachi:
-- 2023-SE-02 ???
-- 2023-IN-01 ot input/output i ot processes
+- 2023-IN-01 ot input/output
+- 2023-SE-02
+- 2023-SE-01
 
 Vuprosi:
 - primer zashto close-vame pd[1], pd[0] - predi da napravim protivopolojnoto v parent ili child-a
