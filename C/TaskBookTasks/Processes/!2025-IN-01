@@ -1,0 +1,212 @@
+#include <stdint.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <err.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+
+int asserted_open(const char* filename, int mode, int* perms) {
+    int fd;
+    if (perms != NULL) {
+        fd = open(filename, mode, perms);
+    } else {
+        fd = open(filename, mode);
+    }
+
+    if (fd < 0) {
+        err(2, "Failed to open file");
+    }
+
+    return fd;
+}
+
+int asserted_read(int fd, void* buff, int size) {
+    int r = read(fd, buff, size);
+
+    if (r < 0) {
+        err(2, "Failed to read from file");
+    }
+
+    return r;
+}
+
+int asserted_write(int fd, void* buff, int size) {
+    int w = write(fd, buff, size);
+
+    if (w < 0) {
+        err(2, "Failed to write to file");
+    }
+
+    return w;
+}
+
+int asserted_lseek(int fd, off_t offset, int whence) {
+    int ls = lseek(fd, offset, whence);
+
+    if (ls < 0) {
+        err(2, "Failed to lseek");
+    }
+
+    return ls;
+}
+
+pid_t asserted_fork(void) {
+    pid_t child_pid = fork();
+
+    if (child_pid < 0) {
+        err(3, "Failed to fork process");
+    }
+
+    return child_pid;
+}
+
+typedef struct {
+    uint16_t ram_size; // <= 512
+    uint16_t register_count; // <= 32
+    char filename[8]; // the last + the other unknown bytes are always 0x00
+} Data;
+
+// Registers - 1 byte
+// Instructions - 4 bytes:
+typedef struct {
+    uint8_t opcode;
+    uint8_t op1;
+    uint8_t op2;
+    uint8_t op3;
+} InstructionData;
+
+void executeInstruction(InstructionData instruction, uint8_t registers[32], uint8_t ramBytes[512]) {
+   if (instruction.opcode == 0) {
+       registers[instruction.op1] = registers[instruction.op2] & registers[instruction.op3];
+   } else if (instruction.opcode == 1) {
+       registers[instruction.op1] = registers[instruction.op2] | registers[instruction.op3];
+   }  else if (instruction.opcode == 2) {
+       registers[instruction.op1] = registers[instruction.op2] + registers[instruction.op3];
+   }  else if (instruction.opcode == 3) {
+       registers[instruction.op1] = registers[instruction.op2] * registers[instruction.op3];
+   }  else if (instruction.opcode == 4) {
+       registers[instruction.op1] = registers[instruction.op2] ^ registers[instruction.op3];
+   }  else if (instruction.opcode == 5) {
+        asserted_write(1, &registers[instruction.op1], sizeof(registers[instruction.op1]));
+   }  else if (instruction.opcode == 6) {
+        sleep(registers[instruction.op1]);
+   }  else if (instruction.opcode == 7) {
+        registers[instruction.op1] = ramBytes[registers[instruction.op2]];
+   }  else if (instruction.opcode == 8) {
+        ramBytes[registers[instruction.op2]] = registers[instruction.op1];
+   }  else if (instruction.opcode == 9) {
+        if (registers[instruction.op1] != registers[instruction.op2]) {
+            registers[instruction.op1] = 0;
+            registers[instruction.op1] = 0;
+        }
+   }  else if (instruction.opcode == 10) {
+        registers[instruction.op1] = instruction.op2;
+   }  else if (instruction.opcode == 11) {
+        ramBytes[registers[instruction.op1]] = instruction.op2;
+   }
+}
+
+void writeNewDataToFile(int fd, uint8_t registers[32], uint16_t registers_count, uint8_t ramBytes[512], uint16_t ram_size) {
+    for(uint16_t i = 0; i < registers_count; i++) {
+        asserted_write(fd, &registers[i], sizeof(registers[i]));
+    }
+
+    for(uint16_t i = 0; i < ram_size; i++) {
+        asserted_write(fd, &ramBytes[i], sizeof(ramBytes[i]));
+    }
+}
+
+int main(int argc, char* argv[]) {
+        if (argc != 2) {
+        errx(1, "Expected 1 arg");
+        }
+
+        int fd = asserted_open(argv[1], O_RDWR, NULL);
+
+    struct stat st;
+    if (fstat(fd, &st) < 0) {
+        err(2, "Failed to fstat");
+    }
+
+    if (st.st_size % sizeof(Data) != 0) {
+        err(3, "Invalid input file size");
+    }
+
+    int dataCount = st.st_size / sizeof(Data);
+    for (int i = 0; i < dataCount; i++) {
+
+        pid_t child_pid = asserted_fork();
+        if (child_pid == 0) {
+            // Read triplet of data from the input file
+            Data data;
+            asserted_read(fd, &data.ram_size, sizeof(data.ram_size));
+            asserted_read(fd, &data.register_count, sizeof(data.register_count));
+            uint8_t ch;
+            int index = 0;
+            while(asserted_read(fd, &ch, sizeof(ch)) > 0) {
+                if (ch == 0x00) {
+                    break;
+                }
+                data.filename[index++] = ch;
+            }
+
+            // Fill the rest of the remaining bytes in filename with zeros
+            for (int j = index; j < 8; j++) {
+                data.filename[j] = 0x00;
+            }
+
+            // Validate the read data
+            if (data.ram_size > 512) {
+                err(4, "Invalid ram size in triplet");
+            }
+
+            if (data.register_count > 32) {
+                err(4, "Invalid register count in triplet");
+            }
+
+            int fdDataFile = asserted_open((char*)data.filename, O_RDWR, NULL);
+
+            // Read register values
+            uint8_t registers[32];
+            uint8_t curr;
+            for (uint16_t j = 0; j < data.register_count; j++) {
+                asserted_read(fdDataFile, &curr, sizeof(curr));
+                registers[j] = curr;
+            }
+
+            // Read ram init
+            uint8_t ramBytes[512];
+            for(uint16_t j = 0; j < data.ram_size; j++) {
+                asserted_read(fdDataFile, &curr, sizeof(curr));
+                ramBytes[j] = curr;
+            }
+
+            // Read and execute instructions
+            InstructionData instruction;
+            int bytesRead = 0;
+            while ((bytesRead = asserted_read(fdDataFile, &instruction, sizeof(instruction))) > 0) {
+                // Execute the instruction
+                executeInstruction(instruction, registers, ramBytes);
+            }
+            // Rewrite existing registers and ramBytes in file
+            writeNewDataToFile(fdDataFile, registers, data.register_count, ramBytes, data.ram_size);
+            close(fdDataFile);
+        }
+    }
+
+    int status;
+    if (wait(&status) < 0) {
+        err(6, "Failed to wait for child process");
+    }
+
+    if (!WIFEXITED(status)) {
+        err(6, "Child didnt exited successfully");
+    } else {
+        if (WEXITSTATUS(status) != 0) {
+            err(6, "Child exited with status != 0");
+        }
+    }
+
+    close(fd);
+}
