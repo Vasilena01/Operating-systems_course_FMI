@@ -1,3 +1,95 @@
+// First solution - correct
+#include <stdint.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <err.h>
+#include <string.h>
+#include <sys/wait.h>
+
+int asserted_read(int fd, void* buff, int size) {
+    int r = read(fd, buff, size);
+
+    if (r < 0) {
+        err(1, "Failed to read from file");
+    }
+
+    return r;
+}
+
+int main(int argc, char* argv[]) {
+
+    // Read arguments for the command from standart input
+    char args[1024][5];
+    char ch;
+    int wordSize = 0;
+    int argsIndex = 0;
+    while (asserted_read(0, &ch, sizeof(ch)) > 0) {
+        if ((ch != 0x20) && (ch != 0x0A) && (wordSize <= 4)) {
+            args[argsIndex][wordSize++] = ch;
+        }
+        else if (((ch == 0x20) || (ch == 0x0A)) && (wordSize <= 4)) {
+            args[argsIndex][wordSize] = '\0';
+            argsIndex++;
+            wordSize = 0;
+        }
+        else if (wordSize > 4) {
+            err(2, "Arg size is bigger then 4");
+        }
+    }
+
+    // Get the command
+    char command[5];
+
+    if (argc == 2) {
+        if (strlen(argv[1]) > 4) {
+            err(2, "Command expected to be with max len 4");
+        }
+        strcpy(command, argv[1]);
+    }
+    else {
+        strcpy(command, "echo\0");
+    }
+
+    // Execute the command with the args
+
+    for (int i = 0; i < argsIndex; i += 2) {
+        pid_t child_pid = fork();
+
+        if (child_pid < 0) {
+            err(3, "Failed to fork");
+        }
+
+        if (child_pid == 0) {
+            if (i == argsIndex - 1) {
+                if (execlp(command, command, args[i], (void*)NULL) < 0) {
+                    err(4, "Failed to execute %s", command);
+                }
+            }
+            else {
+                if (execlp(command, command, args[i], args[i + 1], (void*)NULL) < 0) {
+                    err(4, "Failed to execute %s", command);
+                }
+            }
+        }
+
+        int status;
+        if (wait(&status) < 0) {
+            err(5, "Failed to wait for child pid");
+        }
+
+        if (WIFEXITED(status)) {
+            if (WEXITSTATUS(status) != 0) {
+                err(6, "Failed to exit with status 0");
+            }
+        }
+        else {
+            err(6, "Failed to exit process");
+        }
+    }
+}
+
+// Second solution - not correct
 #include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
